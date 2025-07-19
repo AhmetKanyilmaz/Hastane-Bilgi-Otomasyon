@@ -1,59 +1,109 @@
-# HbysComprehensiveUi
+# 🏥 Hastane Bilgi Otomasyon Sistemi
 
-This project was generated using [Angular CLI](https://github.com/angular/angular-cli) version 20.1.1.
+Angular 18 ile geliştirilmiş modern hastane yönetim sistemi. Material Design bileşenleri ve responsive tasarım ile kullanıcı dostu bir deneyim sunar.
 
-## Development server
+## 🚀 Özellikler
 
-To start a local development server, run:
+### 📋 Modüller
+- **🩺 Hasta İşlemleri** - Hasta kayıt, arama, kabul ve taburcu işlemleri
+- **🏥 Poliklinik** - Randevu sistemi, doktor programları ve muayene ekranları
+- **🧪 Laboratuvar** - Test talepleri, sonuç girişi ve laborant ekranı
+- **📱 Radyoloji** - Görüntüleme talepleri ve PACS sistemi
+- **💰 Mali İşler** - Faturalama, tahsilat ve mali raporlar
+- **👥 İnsan Kaynakları** - Personel yönetimi ve vardiya planlama
+- **📦 Stok Yönetimi** - Envanter takibi ve tedarikçi yönetimi
+- **📊 Raporlama** - Detaylı analiz ve performans raporları
+
+### 🎨 Teknik Özellikler
+- **Angular 18** - Modern frontend framework
+- **Material Design** - Google Material bileşenleri
+- **TypeScript** - Tip güvenliği
+- **Responsive** - Mobil uyumlu tasarım
+- **Modüler Yapı** - Bakımı kolay kod organizasyonu
+
+## 🛠️ Kurulum
+
+### Gereksinimler
+- Node.js (v18+)
+- Angular CLI (v18+)
+
+### Proje Kurulumu
+
+```bash
+# Repoyu klonlayın
+git clone https://github.com/AhmetKanyilmaz/Hastane-Bilgi-Otomasyon.git
+
+# Proje dizinine gidin
+cd Hastane-Bilgi-Otomasyon
+
+# Bağımlılıkları yükleyin
+npm install
+```
+
+## 🏃‍♂️ Çalıştırma
+
+### Geliştirme Sunucusu
 
 ```bash
 ng serve
 ```
 
-Once the server is running, open your browser and navigate to `http://localhost:4200/`. The application will automatically reload whenever you modify any of the source files.
+Tarayıcınızda `http://localhost:4200/` adresine gidin. Kaynak dosyalarını değiştirdiğinizde uygulama otomatik olarak yeniden yüklenir.
 
-## Code scaffolding
-
-Angular CLI includes powerful code scaffolding tools. To generate a new component, run:
-
-```bash
-ng generate component component-name
-```
-
-For a complete list of available schematics (such as `components`, `directives`, or `pipes`), run:
-
-```bash
-ng generate --help
-```
-
-## Building
-
-To build the project run:
+### Üretim Build
 
 ```bash
 ng build
 ```
 
-This will compile your project and store the build artifacts in the `dist/` directory. By default, the production build optimizes your application for performance and speed.
+Build dosyaları `dist/` klasöründe oluşturulur.
 
-## Running unit tests
+## 🧪 Test
 
-To execute unit tests with the [Karma](https://karma-runner.github.io) test runner, use the following command:
+### Unit Testler
 
 ```bash
 ng test
 ```
 
-## Running end-to-end tests
-
-For end-to-end (e2e) testing, run:
+### End-to-End Testler
 
 ```bash
 ng e2e
 ```
 
-Angular CLI does not come with an end-to-end testing framework by default. You can choose one that suits your needs.
+## 📁 Proje Yapısı
 
-## Additional Resources
+```
+src/
+├── app/
+│   ├── components/          # Ortak bileşenler
+│   │   ├── layout/          # Layout bileşenleri (sidebar, navbar)
+│   │   └── auth/            # Kimlik doğrulama
+│   ├── features/            # Modül bileşenleri
+│   │   ├── laboratuvar/     # Laboratuvar modülü
+│   │   ├── poliklinik/      # Poliklinik modülü
+│   │   ├── hasta/           # Hasta işlemleri
+│   │   └── ...              # Diğer modüller
+│   ├── models/              # TypeScript modelleri
+│   ├── services/            # Angular servisler
+│   └── styles.scss          # Global stiller
+```
 
-For more information on using the Angular CLI, including detailed command references, visit the [Angular CLI Overview and Command Reference](https://angular.dev/tools/cli) page.
+## 🤝 Katkıda Bulunma
+
+1. Bu repoyu fork edin
+2. Feature branch oluşturun (`git checkout -b feature/yeni-ozellik`)
+3. Değişikliklerinizi commit edin (`git commit -am 'Yeni özellik eklendi'`)
+4. Branch'inizi push edin (`git push origin feature/yeni-ozellik`)
+5. Pull Request oluşturun
+
+## 📝 Lisans
+
+Bu proje MIT lisansı altında lisanslanmıştır.
+
+## 📞 İletişim
+
+Ahmet Emirhan Kanyılmaz - [@AhmetKanyilmaz](https://github.com/AhmetKanyilmaz)
+
+Proje Linki: [https://github.com/AhmetKanyilmaz/Hastane-Bilgi-Otomasyon](https://github.com/AhmetKanyilmaz/Hastane-Bilgi-Otomasyon)
