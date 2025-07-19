@@ -1,0 +1,280 @@
+<div class="doktor-randevu-container">
+  <mat-card>
+    <mat-card-header>
+      <mat-card-title>
+        <mat-icon>healing</mat-icon>
+        Doktor Listesi ve Randevu Alma
+      </mat-card-title>
+    </mat-card-header>
+
+    <mat-card-content>
+      <mat-tab-group [(selectedIndex)]="selectedTab">
+        <!-- Doktor Arama ve Listesi -->
+        <mat-tab label="Doktor Listesi">
+          <div class="tab-content">
+            <!-- Arama Formu -->
+            <mat-card class="search-card">
+              <mat-card-header>
+                <mat-card-title>Doktor Arama</mat-card-title>
+              </mat-card-header>
+              <mat-card-content>
+                <form [formGroup]="doktorAramaForm" class="search-form">
+                  <div class="search-row">
+                    <mat-form-field>
+                      <mat-label>Arama</mat-label>
+                      <input matInput formControlName="aramaTerimi" placeholder="Doktor adı, uzmanlık alanı...">
+                      <mat-icon matSuffix>search</mat-icon>
+                    </mat-form-field>
+
+                    <mat-form-field>
+                      <mat-label>Poliklinik</mat-label>
+                      <mat-select formControlName="poliklinikId">
+                        <mat-option value="">Tüm Poliklinikler</mat-option>
+                        <mat-option *ngFor="let poliklinik of poliklinikler" [value]="poliklinik.id">
+                          {{poliklinik.ad}}
+                        </mat-option>
+                      </mat-select>
+                    </mat-form-field>
+
+                    <mat-form-field>
+                      <mat-label>Kategori</mat-label>
+                      <mat-select formControlName="kategori">
+                        <mat-option value="">Tüm Kategoriler</mat-option>
+                        <mat-option *ngFor="let kategori of kategoriler" [value]="kategori">
+                          {{kategori}}
+                        </mat-option>
+                      </mat-select>
+                    </mat-form-field>
+                  </div>
+
+                  <div class="search-actions">
+                    <button mat-raised-button color="primary" (click)="doktorAra()" [disabled]="yukleniyor">
+                      <mat-icon>search</mat-icon>
+                      Ara
+                    </button>
+                    <button mat-button (click)="temizle()">
+                      <mat-icon>clear</mat-icon>
+                      Temizle
+                    </button>
+                  </div>
+                </form>
+              </mat-card-content>
+            </mat-card>
+
+            <!-- Doktor Listesi -->
+            <mat-card class="results-card">
+              <mat-card-header>
+                <mat-card-title>
+                  Doktorlar 
+                  <mat-chip-set>
+                    <mat-chip [color]="'primary'" selected>{{filtreliDoktorlar.length}} doktor</mat-chip>
+                  </mat-chip-set>
+                </mat-card-title>
+              </mat-card-header>
+              <mat-card-content>
+                <div *ngIf="yukleniyor" class="loading">
+                  <mat-spinner></mat-spinner>
+                  <p>Doktorlar yükleniyor...</p>
+                </div>
+
+                <div *ngIf="!yukleniyor && filtreliDoktorlar.length === 0" class="no-results">
+                  <mat-icon>person_search</mat-icon>
+                  <p>Arama kriterlerinize uygun doktor bulunamadı.</p>
+                </div>
+
+                <div *ngIf="!yukleniyor && filtreliDoktorlar.length > 0" class="doktor-grid">
+                  <mat-card *ngFor="let doktor of filtreliDoktorlar" class="doktor-card">
+                    <mat-card-header>
+                      <div mat-card-avatar class="doktor-avatar">
+                        <mat-icon>person</mat-icon>
+                      </div>
+                      <mat-card-title>{{doktor.unvan}} {{doktor.ad}} {{doktor.soyad}}</mat-card-title>
+                      <mat-card-subtitle>{{doktor.uzmanlikAlani}}</mat-card-subtitle>
+                    </mat-card-header>
+                    
+                    <mat-card-content>
+                      <div class="doktor-info">
+                        <div class="info-item">
+                          <mat-icon>local_hospital</mat-icon>
+                          <span [style.color]="getPoliklinikRengi(doktor.poliklinikId)">
+                            {{doktor.poliklinikAdi}}
+                          </span>
+                        </div>
+                        <div class="info-item">
+                          <mat-icon>star</mat-icon>
+                          <span>{{doktor.deneyimYil}} yıl deneyim</span>
+                        </div>
+                        <div class="info-item">
+                          <mat-icon>phone</mat-icon>
+                          <span>{{doktor.telefon}}</span>
+                        </div>
+                      </div>
+
+                      <!-- Çalışma Saatleri -->
+                      <mat-expansion-panel class="work-hours">
+                        <mat-expansion-panel-header>
+                          <mat-panel-title>
+                            <mat-icon>schedule</mat-icon>
+                            Çalışma Saatleri
+                          </mat-panel-title>
+                        </mat-expansion-panel-header>
+                        
+                        <div class="schedule-list">
+                          <div *ngFor="let saat of doktor.calismaSaatleri" class="schedule-item">
+                            <span class="day">{{saat.gun}}</span>
+                            <span class="time" *ngIf="saat.aktif">{{saat.baslangic}} - {{saat.bitis}}</span>
+                            <span class="time inactive" *ngIf="!saat.aktif">Çalışmıyor</span>
+                          </div>
+                        </div>
+                      </mat-expansion-panel>
+                    </mat-card-content>
+
+                    <mat-card-actions>
+                      <button mat-raised-button color="primary" (click)="doktorSec(doktor)">
+                        <mat-icon>event</mat-icon>
+                        Randevu Al
+                      </button>
+                    </mat-card-actions>
+                  </mat-card>
+                </div>
+              </mat-card-content>
+            </mat-card>
+          </div>
+        </mat-tab>
+
+        <!-- Randevu Alma -->
+        <mat-tab label="Randevu Al">
+          <div class="tab-content">
+            <mat-card *ngIf="!seciliDoktor" class="info-card">
+              <mat-card-content>
+                <div class="info-message">
+                  <mat-icon>info</mat-icon>
+                  <p>Randevu almak için önce bir doktor seçin.</p>
+                  <button mat-button color="primary" (click)="selectedTab = 0">
+                    Doktor Seç
+                  </button>
+                </div>
+              </mat-card-content>
+            </mat-card>
+
+            <div *ngIf="seciliDoktor" class="randevu-form-container">
+              <!-- Seçili Doktor Bilgisi -->
+              <mat-card class="selected-doctor-card">
+                <mat-card-header>
+                  <div mat-card-avatar class="doktor-avatar">
+                    <mat-icon>person</mat-icon>
+                  </div>
+                  <mat-card-title>{{seciliDoktor.unvan}} {{seciliDoktor.ad}} {{seciliDoktor.soyad}}</mat-card-title>
+                  <mat-card-subtitle>{{seciliDoktor.uzmanlikAlani}} - {{seciliDoktor.poliklinikAdi}}</mat-card-subtitle>
+                </mat-card-header>
+              </mat-card>
+
+              <!-- Randevu Formu -->
+              <mat-card class="appointment-form-card">
+                <mat-card-header>
+                  <mat-card-title>Randevu Bilgileri</mat-card-title>
+                </mat-card-header>
+                <mat-card-content>
+                  <form [formGroup]="randevuForm" class="appointment-form">
+                    <div class="form-row">
+                      <mat-form-field>
+                        <mat-label>Hasta</mat-label>
+                        <mat-select formControlName="hastaId" required>
+                          <mat-option *ngFor="let hasta of hastalar" [value]="hasta.id">
+                            {{hasta.ad}} {{hasta.soyad}} - {{hasta.tcKimlik}}
+                          </mat-option>
+                        </mat-select>
+                        <mat-error>Hasta seçimi zorunludur</mat-error>
+                      </mat-form-field>
+
+                      <mat-form-field>
+                        <mat-label>Randevu Tarihi</mat-label>
+                        <input matInput [matDatepicker]="picker" formControlName="tarih" 
+                               (dateChange)="randevuTarihiSecildi()" required>
+                        <mat-datepicker-toggle matSuffix [for]="picker"></mat-datepicker-toggle>
+                        <mat-datepicker #picker></mat-datepicker>
+                        <mat-error>Tarih seçimi zorunludur</mat-error>
+                      </mat-form-field>
+
+                      <mat-form-field>
+                        <mat-label>Öncelik</mat-label>
+                        <mat-select formControlName="oncelik" required>
+                          <mat-option *ngFor="let oncelik of oncelikler" [value]="oncelik">
+                            {{oncelik}}
+                          </mat-option>
+                        </mat-select>
+                      </mat-form-field>
+                    </div>
+
+                    <div class="form-row">
+                      <mat-form-field class="full-width">
+                        <mat-label>Şikayet</mat-label>
+                        <textarea matInput formControlName="sikayet" rows="3" 
+                                  placeholder="Hastanın şikayetleri..."></textarea>
+                      </mat-form-field>
+                    </div>
+
+                    <div class="form-row">
+                      <mat-form-field class="full-width">
+                        <mat-label>Notlar</mat-label>
+                        <textarea matInput formControlName="notlar" rows="2" 
+                                  placeholder="Ek notlar..."></textarea>
+                      </mat-form-field>
+                    </div>
+                  </form>
+                </mat-card-content>
+              </mat-card>
+
+              <!-- Müsait Saatler -->
+              <mat-card *ngIf="randevuForm.get('tarih')?.value" class="time-slots-card">
+                <mat-card-header>
+                  <mat-card-title>Müsait Saatler</mat-card-title>
+                  <mat-card-subtitle>{{randevuForm.get('tarih')?.value | date:'dd/MM/yyyy'}}</mat-card-subtitle>
+                </mat-card-header>
+                <mat-card-content>
+                  <div *ngIf="yukleniyor" class="loading">
+                    <mat-spinner></mat-spinner>
+                    <p>Müsait saatler yükleniyor...</p>
+                  </div>
+
+                  <div *ngIf="!yukleniyor && randevuSlotlari.length === 0" class="no-slots">
+                    <mat-icon>event_busy</mat-icon>
+                    <p>Bu tarihte müsait saat bulunmamaktadır.</p>
+                  </div>
+
+                  <div *ngIf="!yukleniyor && randevuSlotlari.length > 0" class="time-slots">
+                    <div *ngFor="let slot of randevuSlotlari" 
+                         class="time-slot"
+                         [class.selected]="seciliSlot?.saat === slot.saat"
+                         [class.unavailable]="!slot.musait"
+                         (click)="slotSec(slot)">
+                      <mat-icon *ngIf="slot.musait">schedule</mat-icon>
+                      <mat-icon *ngIf="!slot.musait">event_busy</mat-icon>
+                      <span>{{slot.saat}}</span>
+                    </div>
+                  </div>
+                </mat-card-content>
+              </mat-card>
+
+              <!-- Randevu Alma Butonu -->
+              <div class="appointment-actions">
+                <button mat-raised-button color="primary" 
+                        [disabled]="randevuForm.invalid || !seciliSlot || yukleniyor"
+                        (click)="randevuAl()">
+                  <mat-icon>event_available</mat-icon>
+                  <span *ngIf="!yukleniyor">Randevu Al</span>
+                  <span *ngIf="yukleniyor">Randevu Alınıyor...</span>
+                </button>
+                
+                <button mat-button (click)="selectedTab = 0">
+                  <mat-icon>arrow_back</mat-icon>
+                  Doktor Listesine Dön
+                </button>
+              </div>
+            </div>
+          </div>
+        </mat-tab>
+      </mat-tab-group>
+    </mat-card-content>
+  </mat-card>
+</div>

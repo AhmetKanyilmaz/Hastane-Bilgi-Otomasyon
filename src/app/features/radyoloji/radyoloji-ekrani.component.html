@@ -1,0 +1,579 @@
+<div class="radyoloji-container">
+  <mat-card>
+    <mat-card-header>
+      <mat-card-title>
+        <mat-icon>medical_information</mat-icon>
+        Radyoloji Yönetim Sistemi
+      </mat-card-title>
+    </mat-card-header>
+
+    <mat-card-content>
+      <mat-tab-group [(selectedIndex)]="selectedTab">
+        
+        <!-- Dashboard -->
+        <mat-tab label="Dashboard">
+          <div class="tab-content">
+            <!-- İstatistik Kartları -->
+            <div class="stats-grid" *ngIf="istatistikler">
+              <mat-card class="stat-card">
+                <mat-card-header>
+                  <mat-card-title>
+                    <mat-icon [style.color]="'#2196f3'">today</mat-icon>
+                    Günlük Tetkik
+                  </mat-card-title>
+                </mat-card-header>
+                <mat-card-content>
+                  <div class="stat-number">{{istatistikler.gunlukTetkikSayisi}}</div>
+                </mat-card-content>
+              </mat-card>
+
+              <mat-card class="stat-card">
+                <mat-card-header>
+                  <mat-card-title>
+                    <mat-icon [style.color]="'#ff9800'">hourglass_empty</mat-icon>
+                    Bekleyen İstek
+                  </mat-card-title>
+                </mat-card-header>
+                <mat-card-content>
+                  <div class="stat-number">{{istatistikler.bekleyenIstek}}</div>
+                </mat-card-content>
+              </mat-card>
+
+              <mat-card class="stat-card">
+                <mat-card-header>
+                  <mat-card-title>
+                    <mat-icon [style.color]="'#4caf50'">check_circle</mat-icon>
+                    Tamamlanan
+                  </mat-card-title>
+                </mat-card-header>
+                <mat-card-content>
+                  <div class="stat-number">{{istatistikler.tamamlananIstek}}</div>
+                </mat-card-content>
+              </mat-card>
+
+              <mat-card class="stat-card">
+                <mat-card-header>
+                  <mat-card-title>
+                    <mat-icon [style.color]="'#f44336'">warning</mat-icon>
+                    Kritik Bulgu
+                  </mat-card-title>
+                </mat-card-header>
+                <mat-card-content>
+                  <div class="stat-number">{{istatistikler.kritikBulgu}}</div>
+                </mat-card-content>
+              </mat-card>
+
+              <mat-card class="stat-card">
+                <mat-card-header>
+                  <mat-card-title>
+                    <mat-icon [style.color]="'#4caf50'">attach_money</mat-icon>
+                    Günlük Gelir
+                  </mat-card-title>
+                </mat-card-header>
+                <mat-card-content>
+                  <div class="stat-number">{{istatistikler.gelirToplami | currency:'TRY':'symbol':'1.0-0'}}</div>
+                </mat-card-content>
+              </mat-card>
+            </div>
+
+            <!-- Cihaz Kullanımı -->
+            <div class="dashboard-row">
+              <mat-card class="chart-card">
+                <mat-card-header>
+                  <mat-card-title>Cihaz Kullanım Oranları</mat-card-title>
+                </mat-card-header>
+                <mat-card-content>
+                  <div class="device-usage" *ngIf="istatistikler">
+                    <div class="usage-item" *ngFor="let kullanim of istatistikler.cihazKullanimi">
+                      <div class="usage-header">
+                        <span class="device-name">{{kullanim.cihazAdi}}</span>
+                        <span class="usage-percent">%{{getCihazKullanimYuzdesi(kullanim.kullanim, kullanim.kapasite)}}</span>
+                      </div>
+                      <mat-progress-bar 
+                        mode="determinate" 
+                        [value]="getCihazKullanimYuzdesi(kullanim.kullanim, kullanim.kapasite)"
+                        [color]="getCihazKullanimYuzdesi(kullanim.kullanim, kullanim.kapasite) > 80 ? 'warn' : 'primary'">
+                      </mat-progress-bar>
+                    </div>
+                  </div>
+                </mat-card-content>
+              </mat-card>
+
+              <mat-card class="chart-card">
+                <mat-card-header>
+                  <mat-card-title>Popüler Tetkikler</mat-card-title>
+                </mat-card-header>
+                <mat-card-content>
+                  <div class="popular-tests" *ngIf="istatistikler">
+                    <div class="test-item" *ngFor="let tetkik of istatistikler.populerTetkikler">
+                      <div class="test-info">
+                        <span class="test-name">{{tetkik.tetkikAdi}}</span>
+                        <span class="test-count">{{tetkik.sayi}} adet</span>
+                      </div>
+                      <mat-chip [style.background-color]="'#e3f2fd'">{{tetkik.sayi}}</mat-chip>
+                    </div>
+                  </div>
+                </mat-card-content>
+              </mat-card>
+            </div>
+          </div>
+        </mat-tab>
+
+        <!-- İstek Yönetimi -->
+        <mat-tab label="İstek Yönetimi">
+          <div class="tab-content">
+            <!-- Arama Formu -->
+            <mat-card class="search-card">
+              <mat-card-header>
+                <mat-card-title>Radyoloji İstek Arama</mat-card-title>
+              </mat-card-header>
+              <mat-card-content>
+                <form [formGroup]="istekAramaForm" class="search-form">
+                  <div class="search-row">
+                    <mat-form-field>
+                      <mat-label>Hasta Adı / TC Kimlik</mat-label>
+                      <input matInput formControlName="hastaAdi" placeholder="Hasta adı veya TC kimlik">
+                      <mat-icon matSuffix>search</mat-icon>
+                    </mat-form-field>
+
+                    <mat-form-field>
+                      <mat-label>Tetkik Türü</mat-label>
+                      <mat-select formControlName="tetkikTuru">
+                        <mat-option value="">Tümü</mat-option>
+                        <mat-option *ngFor="let tur of tetkikTurleri" [value]="tur">{{tur}}</mat-option>
+                      </mat-select>
+                    </mat-form-field>
+
+                    <mat-form-field>
+                      <mat-label>Durum</mat-label>
+                      <mat-select formControlName="durum">
+                        <mat-option value="">Tümü</mat-option>
+                        <mat-option *ngFor="let durum of durumlar" [value]="durum">{{durum}}</mat-option>
+                      </mat-select>
+                    </mat-form-field>
+                  </div>
+
+                  <div class="search-row">
+                    <mat-form-field>
+                      <mat-label>Başlangıç Tarihi</mat-label>
+                      <input matInput [matDatepicker]="picker1" formControlName="tarihBaslangic">
+                      <mat-datepicker-toggle matSuffix [for]="picker1"></mat-datepicker-toggle>
+                      <mat-datepicker #picker1></mat-datepicker>
+                    </mat-form-field>
+
+                    <mat-form-field>
+                      <mat-label>Bitiş Tarihi</mat-label>
+                      <input matInput [matDatepicker]="picker2" formControlName="tarihBitis">
+                      <mat-datepicker-toggle matSuffix [for]="picker2"></mat-datepicker-toggle>
+                      <mat-datepicker #picker2></mat-datepicker>
+                    </mat-form-field>
+
+                    <div class="search-actions">
+                      <button mat-raised-button color="primary" (click)="istekAra()" [disabled]="yukleniyor">
+                        <mat-icon>search</mat-icon>
+                        Ara
+                      </button>
+                      <button mat-button (click)="aramaTemizle()">
+                        <mat-icon>clear</mat-icon>
+                        Temizle
+                      </button>
+                    </div>
+                  </div>
+                </form>
+              </mat-card-content>
+            </mat-card>
+
+            <!-- İstek Listesi -->
+            <mat-card class="results-card">
+              <mat-card-header>
+                <mat-card-title>
+                  Radyoloji İstekleri
+                  <mat-chip-set>
+                    <mat-chip [color]="'primary'" selected>{{filtreliIstekler.length}} istek</mat-chip>
+                  </mat-chip-set>
+                </mat-card-title>
+              </mat-card-header>
+              <mat-card-content>
+                <div *ngIf="yukleniyor" class="loading">
+                  <mat-spinner></mat-spinner>
+                  <p>İstekler yükleniyor...</p>
+                </div>
+
+                <div *ngIf="!yukleniyor && filtreliIstekler.length === 0" class="no-results">
+                  <mat-icon>inbox</mat-icon>
+                  <p>Arama kriterlerinize uygun istek bulunamadı.</p>
+                </div>
+
+                <div *ngIf="!yukleniyor && filtreliIstekler.length > 0" class="table-container">
+                  <table mat-table [dataSource]="filtreliIstekler" class="requests-table">
+                    <!-- ID Kolonu -->
+                    <ng-container matColumnDef="id">
+                      <th mat-header-cell *matHeaderCellDef>İstek No</th>
+                      <td mat-cell *matCellDef="let istek">{{istek.id}}</td>
+                    </ng-container>
+
+                    <!-- Hasta Adı Kolonu -->
+                    <ng-container matColumnDef="hastaAdi">
+                      <th mat-header-cell *matHeaderCellDef>Hasta</th>
+                      <td mat-cell *matCellDef="let istek">
+                        <div class="patient-info">
+                          <strong>{{istek.hastaAdi}}</strong>
+                          <small>{{istek.hastaTcKimlik}}</small>
+                        </div>
+                      </td>
+                    </ng-container>
+
+                    <!-- Tetkik Adı Kolonu -->
+                    <ng-container matColumnDef="tetkikAdi">
+                      <th mat-header-cell *matHeaderCellDef>Tetkik</th>
+                      <td mat-cell *matCellDef="let istek">
+                        <div class="test-info">
+                          <strong>{{istek.tetkikAdi}}</strong>
+                          <small>{{istek.tetkikTuru}}</small>
+                        </div>
+                      </td>
+                    </ng-container>
+
+                    <!-- İstek Tarihi Kolonu -->
+                    <ng-container matColumnDef="istekTarihi">
+                      <th mat-header-cell *matHeaderCellDef>İstek Tarihi</th>
+                      <td mat-cell *matCellDef="let istek">
+                        <div class="date-info">
+                          <strong>{{formatTarih(istek.istekTarihi)}}</strong>
+                          <small>{{istek.istekSaati}}</small>
+                        </div>
+                      </td>
+                    </ng-container>
+
+                    <!-- Öncelik Kolonu -->
+                    <ng-container matColumnDef="oncelik">
+                      <th mat-header-cell *matHeaderCellDef>Öncelik</th>
+                      <td mat-cell *matCellDef="let istek">
+                        <mat-chip [style.background-color]="getOncelikRengi(istek.oncelik)" [style.color]="'white'">
+                          {{istek.oncelik}}
+                        </mat-chip>
+                      </td>
+                    </ng-container>
+
+                    <!-- Durum Kolonu -->
+                    <ng-container matColumnDef="durum">
+                      <th mat-header-cell *matHeaderCellDef>Durum</th>
+                      <td mat-cell *matCellDef="let istek">
+                        <mat-chip [style.background-color]="getDurumRengi(istek.durum)" [style.color]="'white'">
+                          {{istek.durum}}
+                        </mat-chip>
+                      </td>
+                    </ng-container>
+
+                    <!-- İşlemler Kolonu -->
+                    <ng-container matColumnDef="islemler">
+                      <th mat-header-cell *matHeaderCellDef>İşlemler</th>
+                      <td mat-cell *matCellDef="let istek">
+                        <button mat-icon-button [matMenuTriggerFor]="actionMenu">
+                          <mat-icon>more_vert</mat-icon>
+                        </button>
+                        <mat-menu #actionMenu="matMenu">
+                          <button mat-menu-item (click)="istekDurumGuncelle(istek.id, RadyolojiDurum.RANDEVU_VERILDI)">>>
+                            <mat-icon>event</mat-icon>
+                            Randevu Ver
+                          </button>
+                          <button mat-menu-item (click)="istekDurumGuncelle(istek.id, RadyolojiDurum.CEKIM_TAMAMLANDI)">>>
+                            <mat-icon>camera_alt</mat-icon>
+                            Çekim Tamamla
+                          </button>
+                          <button mat-menu-item (click)="istekDurumGuncelle(istek.id, RadyolojiDurum.RAPOR_TAMAMLANDI)">>>
+                            <mat-icon>description</mat-icon>
+                            Rapor Tamamla
+                          </button>
+                          <button mat-menu-item (click)="istekDurumGuncelle(istek.id, RadyolojiDurum.IPTAL)">>>
+                            <mat-icon>cancel</mat-icon>
+                            İptal Et
+                          </button>
+                        </mat-menu>
+                      </td>
+                    </ng-container>
+
+                    <tr mat-header-row *matHeaderRowDef="istekTableColumns"></tr>
+                    <tr mat-row *matRowDef="let row; columns: istekTableColumns;"></tr>
+                  </table>
+                </div>
+              </mat-card-content>
+            </mat-card>
+          </div>
+        </mat-tab>
+
+        <!-- Yeni İstek -->
+        <mat-tab label="Yeni İstek">
+          <div class="tab-content">
+            <mat-card class="form-card">
+              <mat-card-header>
+                <mat-card-title>Yeni Radyoloji İsteği</mat-card-title>
+              </mat-card-header>
+              <mat-card-content>
+                <form [formGroup]="yeniIstekForm" class="new-request-form">
+                  <!-- Hasta Bilgileri -->
+                  <div class="form-section">
+                    <h3>Hasta Bilgileri</h3>
+                    <div class="form-row">
+                      <mat-form-field>
+                        <mat-label>Hasta ID</mat-label>
+                        <input matInput formControlName="hastaId" placeholder="Hasta ID">
+                        <mat-error>Hasta ID gereklidir</mat-error>
+                      </mat-form-field>
+
+                      <mat-form-field>
+                        <mat-label>Hasta Adı</mat-label>
+                        <input matInput formControlName="hastaAdi" placeholder="Hasta adı">
+                        <mat-error>Hasta adı gereklidir</mat-error>
+                      </mat-form-field>
+
+                      <mat-form-field>
+                        <mat-label>TC Kimlik No</mat-label>
+                        <input matInput formControlName="hastaTcKimlik" placeholder="TC Kimlik No" maxlength="11">
+                        <mat-error>Geçerli TC Kimlik No giriniz</mat-error>
+                      </mat-form-field>
+                    </div>
+                  </div>
+
+                  <!-- Doktor Bilgileri -->
+                  <div class="form-section">
+                    <h3>İstek Yapan Doktor</h3>
+                    <div class="form-row">
+                      <mat-form-field>
+                        <mat-label>Doktor ID</mat-label>
+                        <input matInput formControlName="doktorId" placeholder="Doktor ID">
+                        <mat-error>Doktor ID gereklidir</mat-error>
+                      </mat-form-field>
+
+                      <mat-form-field>
+                        <mat-label>Doktor Adı</mat-label>
+                        <input matInput formControlName="doktorAdi" placeholder="Doktor adı">
+                        <mat-error>Doktor adı gereklidir</mat-error>
+                      </mat-form-field>
+
+                      <mat-form-field>
+                        <mat-label>Poliklinik</mat-label>
+                        <input matInput formControlName="poliklinikAdi" placeholder="Poliklinik adı">
+                        <mat-error>Poliklinik gereklidir</mat-error>
+                      </mat-form-field>
+                    </div>
+                  </div>
+
+                  <!-- Tetkik Bilgileri -->
+                  <div class="form-section">
+                    <h3>Tetkik Bilgileri</h3>
+                    <div class="form-row">
+                      <mat-form-field>
+                        <mat-label>Tetkik Türü</mat-label>
+                        <mat-select formControlName="tetkikTuru">
+                          <mat-option *ngFor="let tur of tetkikTurleri" [value]="tur">{{tur}}</mat-option>
+                        </mat-select>
+                        <mat-error>Tetkik türü gereklidir</mat-error>
+                      </mat-form-field>
+
+                      <mat-form-field>
+                        <mat-label>Tetkik Adı</mat-label>
+                        <input matInput formControlName="tetkikAdi" placeholder="Tetkik adı">
+                        <mat-error>Tetkik adı gereklidir</mat-error>
+                      </mat-form-field>
+
+                      <mat-form-field>
+                        <mat-label>Öncelik</mat-label>
+                        <mat-select formControlName="oncelik">
+                          <mat-option *ngFor="let oncelik of oncelikler" [value]="oncelik">{{oncelik}}</mat-option>
+                        </mat-select>
+                      </mat-form-field>
+                    </div>
+
+                    <div class="form-row">
+                      <mat-form-field class="full-width">
+                        <mat-label>Klinik Bilgi</mat-label>
+                        <textarea matInput formControlName="klinikBilgi" rows="3" 
+                                  placeholder="Hasta şikayetleri ve klinik bulgular"></textarea>
+                        <mat-error>Klinik bilgi gereklidir</mat-error>
+                      </mat-form-field>
+                    </div>
+
+                    <div class="form-row">
+                      <mat-form-field class="half-width">
+                        <mat-label>Ön Tanı</mat-label>
+                        <input matInput formControlName="onTani" placeholder="Ön tanı">
+                        <mat-error>Ön tanı gereklidir</mat-error>
+                      </mat-form-field>
+
+                      <mat-form-field class="half-width">
+                        <mat-label>Maliyet (TL)</mat-label>
+                        <input matInput type="number" formControlName="maliyet" placeholder="0">
+                        <mat-error>Maliyet gereklidir</mat-error>
+                      </mat-form-field>
+                    </div>
+
+                    <div class="form-row">
+                      <mat-form-field class="full-width">
+                        <mat-label>Ek Açıklama</mat-label>
+                        <textarea matInput formControlName="aciklama" rows="2" 
+                                  placeholder="Ek açıklamalar (opsiyonel)"></textarea>
+                      </mat-form-field>
+                    </div>
+
+                    <div class="form-row">
+                      <mat-form-field>
+                        <mat-label>Ödeme Yöntemi</mat-label>
+                        <mat-select formControlName="odemeYontem">
+                          <mat-option value="Nakit">Nakit</mat-option>
+                          <mat-option value="Kredi Kartı">Kredi Kartı</mat-option>
+                          <mat-option value="Sigorta">Sigorta</mat-option>
+                          <mat-option value="Havale">Havale</mat-option>
+                        </mat-select>
+                      </mat-form-field>
+                    </div>
+                  </div>
+
+                  <!-- Form Butonları -->
+                  <div class="form-actions">
+                    <button mat-raised-button color="primary" 
+                            [disabled]="yeniIstekForm.invalid || yukleniyor"
+                            (click)="yeniIstekKaydet()">
+                      <mat-icon>save</mat-icon>
+                      <span *ngIf="!yukleniyor">İsteği Kaydet</span>
+                      <span *ngIf="yukleniyor">Kaydediliyor...</span>
+                    </button>
+                    
+                    <button mat-button type="button" (click)="yeniIstekForm.reset()">
+                      <mat-icon>clear</mat-icon>
+                      Temizle
+                    </button>
+                  </div>
+                </form>
+              </mat-card-content>
+            </mat-card>
+          </div>
+        </mat-tab>
+
+        <!-- Cihaz Yönetimi -->
+        <mat-tab label="Cihaz Yönetimi">
+          <div class="tab-content">
+            <mat-card class="devices-card">
+              <mat-card-header>
+                <mat-card-title>
+                  Radyoloji Cihazları
+                  <mat-chip-set>
+                    <mat-chip [color]="'primary'" selected>{{cihazlar.length}} cihaz</mat-chip>
+                  </mat-chip-set>
+                </mat-card-title>
+              </mat-card-header>
+              <mat-card-content>
+                <div class="devices-grid">
+                  <mat-card *ngFor="let cihaz of cihazlar" class="device-card">
+                    <mat-card-header>
+                      <mat-card-title>{{cihaz.ad}}</mat-card-title>
+                      <mat-card-subtitle>{{cihaz.marka}} {{cihaz.model}}</mat-card-subtitle>
+                    </mat-card-header>
+                    <mat-card-content>
+                      <div class="device-info">
+                        <div class="info-item">
+                          <mat-icon>category</mat-icon>
+                          <span>{{cihaz.tip}}</span>
+                        </div>
+                        <div class="info-item">
+                          <mat-icon>location_on</mat-icon>
+                          <span>{{cihaz.lokasyon}}</span>
+                        </div>
+                        <div class="info-item">
+                          <mat-icon>build</mat-icon>
+                          <span>Son Bakım: {{formatTarih(cihaz.sonBakimTarihi!)}}</span>
+                        </div>
+                        <div class="info-item" *ngIf="cihaz.sonKalibrasyon">
+                          <mat-icon>tune</mat-icon>
+                          <span>Son Kalibrasyon: {{formatTarih(cihaz.sonKalibrasyon)}}</span>
+                        </div>
+                      </div>
+                      
+                      <div class="device-status">
+                        <mat-chip [style.background-color]="getCihazDurumRengi(cihaz.durum)" [style.color]="'white'">
+                          {{cihaz.durum}}
+                        </mat-chip>
+                      </div>
+                    </mat-card-content>
+                    <mat-card-actions>
+                      <button mat-button color="primary">
+                        <mat-icon>settings</mat-icon>
+                        Ayarlar
+                      </button>
+                      <button mat-button>
+                        <mat-icon>build</mat-icon>
+                        Bakım
+                      </button>
+                    </mat-card-actions>
+                  </mat-card>
+                </div>
+              </mat-card-content>
+            </mat-card>
+          </div>
+        </mat-tab>
+
+        <!-- Personel -->
+        <mat-tab label="Personel">
+          <div class="tab-content">
+            <mat-card class="staff-card">
+              <mat-card-header>
+                <mat-card-title>
+                  Radyoloji Personeli
+                  <mat-chip-set>
+                    <mat-chip [color]="'primary'" selected>{{personel.length}} personel</mat-chip>
+                  </mat-chip-set>
+                </mat-card-title>
+              </mat-card-header>
+              <mat-card-content>
+                <div class="staff-grid">
+                  <mat-card *ngFor="let kisi of personel" class="staff-card-item">
+                    <mat-card-header>
+                      <div mat-card-avatar class="staff-avatar">
+                        <mat-icon>person</mat-icon>
+                      </div>
+                      <mat-card-title>{{kisi.ad}} {{kisi.soyad}}</mat-card-title>
+                      <mat-card-subtitle>{{kisi.unvan}}</mat-card-subtitle>
+                    </mat-card-header>
+                    <mat-card-content>
+                      <div class="staff-info">
+                        <div class="info-item">
+                          <mat-icon>school</mat-icon>
+                          <span>{{getPersonelUzmanliklari(kisi.uzmanlik)}}</span>
+                        </div>
+                        <div class="info-item">
+                          <mat-icon>phone</mat-icon>
+                          <span>{{kisi.telefon}}</span>
+                        </div>
+                        <div class="info-item">
+                          <mat-icon>email</mat-icon>
+                          <span>{{kisi.email}}</span>
+                        </div>
+                      </div>
+                      
+                      <div class="staff-status">
+                        <mat-chip [color]="kisi.aktif ? 'primary' : 'warn'" selected>
+                          {{kisi.aktif ? 'Aktif' : 'Pasif'}}
+                        </mat-chip>
+                      </div>
+                    </mat-card-content>
+                    <mat-card-actions>
+                      <button mat-button color="primary">
+                        <mat-icon>edit</mat-icon>
+                        Düzenle
+                      </button>
+                      <button mat-button>
+                        <mat-icon>schedule</mat-icon>
+                        Vardiya
+                      </button>
+                    </mat-card-actions>
+                  </mat-card>
+                </div>
+              </mat-card-content>
+            </mat-card>
+          </div>
+        </mat-tab>
+
+      </mat-tab-group>
+    </mat-card-content>
+  </mat-card>
+</div>

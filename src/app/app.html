@@ -1,0 +1,94 @@
+<div class="hospital-app">
+  <mat-toolbar color="primary">
+    <button mat-icon-button (click)="drawer.toggle()" class="menu-button">
+      <mat-icon>menu</mat-icon>
+    </button>
+    <mat-icon>local_hospital</mat-icon>
+    <span>Hastane Bilgi Yönetim Sistemi</span>
+    <span class="spacer"></span>
+    <button mat-icon-button [matMenuTriggerFor]="menu">
+      <mat-icon>account_circle</mat-icon>
+    </button>
+    <mat-menu #menu="matMenu">
+      <button mat-menu-item>Profil</button>
+      <button mat-menu-item>Ayarlar</button>
+      <mat-divider></mat-divider>
+      <button mat-menu-item>Çıkış</button>
+    </mat-menu>
+  </mat-toolbar>
+
+  <mat-sidenav-container class="sidenav-container">
+    <mat-sidenav #drawer class="sidenav" mode="side" opened="true">
+      <div class="user-info">
+        <div class="user-avatar">
+          <mat-icon>account_circle</mat-icon>
+        </div>
+        <div class="user-details">
+          <div class="user-name">Admin User</div>
+          <div class="user-role">Sistem Yöneticisi</div>
+        </div>
+      </div>
+
+      <mat-nav-list>
+        <div class="nav-section">
+          <div class="section-header">ANA MENÜ</div>
+          <a mat-list-item routerLink="/dashboard" routerLinkActive="active">
+            <mat-icon matListIcon>dashboard</mat-icon>
+            <span matListItemTitle>Dashboard</span>
+          </a>
+        </div>
+
+        <div class="nav-section">
+          <div class="section-header">KLİNİK MODÜLLER</div>
+          <a mat-list-item routerLink="/hastalar" routerLinkActive="active">
+            <mat-icon matListIcon>people</mat-icon>
+            <span matListItemTitle>Hasta İşlemleri</span>
+          </a>
+          <a mat-list-item routerLink="/doktor-ekrani" routerLinkActive="active">
+            <mat-icon matListIcon>medical_services</mat-icon>
+            <span matListItemTitle>Doktor Ekranı</span>
+          </a>
+          <a mat-list-item routerLink="/poliklinik" routerLinkActive="active">
+            <mat-icon matListIcon>local_hospital</mat-icon>
+            <span matListItemTitle>Poliklinik</span>
+          </a>
+          <a mat-list-item routerLink="/laboratuvar" routerLinkActive="active">
+            <mat-icon matListIcon>biotech</mat-icon>
+            <span matListItemTitle>Laboratuvar</span>
+          </a>
+          <a mat-list-item routerLink="/radyoloji" routerLinkActive="active">
+            <mat-icon matListIcon>healing</mat-icon>
+            <span matListItemTitle>Radyoloji</span>
+          </a>
+        </div>
+
+        <div class="nav-section">
+          <div class="section-header">İDARI VE MALİ MODÜLLER</div>
+          <a mat-list-item routerLink="/mali-isler" routerLinkActive="active">
+            <mat-icon matListIcon>account_balance</mat-icon>
+            <span matListItemTitle>Mali İşler</span>
+          </a>
+          <a mat-list-item routerLink="/insan-kaynaklari" routerLinkActive="active">
+            <mat-icon matListIcon>groups</mat-icon>
+            <span matListItemTitle>İnsan Kaynakları</span>
+          </a>
+          <a mat-list-item routerLink="/stok-yonetimi" routerLinkActive="active">
+            <mat-icon matListIcon>inventory</mat-icon>
+            <span matListItemTitle>Stok Yönetimi</span>
+          </a>
+          <a mat-list-item routerLink="/raporlama" routerLinkActive="active">
+            <mat-icon matListIcon>assessment</mat-icon>
+            <span matListItemTitle>Raporlama</span>
+          </a>
+        </div>
+      </mat-nav-list>
+    </mat-sidenav>
+
+    <mat-sidenav-content>
+      <div class="content">
+        <!-- Ana içerik router-outlet ile yüklenecek -->
+        <router-outlet></router-outlet>
+      </div>
+    </mat-sidenav-content>
+  </mat-sidenav-container>
+</div>

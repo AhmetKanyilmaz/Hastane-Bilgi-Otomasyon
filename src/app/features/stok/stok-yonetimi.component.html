@@ -1,0 +1,714 @@
+<div class="stok-container">
+  <mat-card>
+    <mat-card-header>
+      <mat-card-title>
+        <mat-icon>inventory</mat-icon>
+        Stok Yönetimi Sistemi
+      </mat-card-title>
+      <mat-card-subtitle>Malzeme, İlaç ve Tıbbi Ekipman Takip Sistemi</mat-card-subtitle>
+    </mat-card-header>
+
+    <mat-card-content>
+      <!-- İstatistik Kartları -->
+      <div class="stats-row">
+        <mat-card class="stat-card">
+          <mat-card-content>
+            <div class="stat-content">
+              <mat-icon class="stat-icon stok-icon">inventory_2</mat-icon>
+              <div class="stat-text">
+                <div class="stat-number">{{stokKalemleri.length}}</div>
+                <div class="stat-label">Stok Kalemi</div>
+              </div>
+            </div>
+          </mat-card-content>
+        </mat-card>
+
+        <mat-card class="stat-card">
+          <mat-card-content>
+            <div class="stat-content">
+              <mat-icon class="stat-icon kritik-icon">warning</mat-icon>
+              <div class="stat-text">
+                <div class="stat-number">{{kritikStoklar.length}}</div>
+                <div class="stat-label">Kritik Stok</div>
+              </div>
+            </div>
+          </mat-card-content>
+        </mat-card>
+
+        <mat-card class="stat-card">
+          <mat-card-content>
+            <div class="stat-content">
+              <mat-icon class="stat-icon talep-icon">request_quote</mat-icon>
+              <div class="stat-text">
+                <div class="stat-number">{{bekleyenTalepler.length}}</div>
+                <div class="stat-label">Bekleyen Talep</div>
+              </div>
+            </div>
+          </mat-card-content>
+        </mat-card>
+
+        <mat-card class="stat-card">
+          <mat-card-content>
+            <div class="stat-content">
+              <mat-icon class="stat-icon tedarikci-icon">business</mat-icon>
+              <div class="stat-text">
+                <div class="stat-number">{{tedarikciler.length}}</div>
+                <div class="stat-label">Tedarikçi</div>
+              </div>
+            </div>
+          </mat-card-content>
+        </mat-card>
+      </div>
+
+      <mat-divider></mat-divider>
+
+      <!-- Tab Menüsü -->
+      <mat-tab-group [(selectedIndex)]="selectedTab">
+        <!-- Stok Kalemleri -->
+        <mat-tab label="Stok Kalemleri" matBadge="{{stokKalemleri.length}}">
+          <div class="tab-content">
+            <!-- Arama ve Filtreleme -->
+            <mat-card class="filter-card">
+              <mat-card-header>
+                <mat-card-title>Stok Arama ve Filtreleme</mat-card-title>
+              </mat-card-header>
+              <mat-card-content>
+                <form [formGroup]="aramaForm" class="filter-form">
+                  <div class="filter-row">
+                    <mat-form-field>
+                      <mat-label>Arama</mat-label>
+                      <input matInput formControlName="aramaTerimi" placeholder="Kod, ad, marka...">
+                      <mat-icon matSuffix>search</mat-icon>
+                    </mat-form-field>
+
+                    <mat-form-field>
+                      <mat-label>Kategori</mat-label>
+                      <mat-select formControlName="kategori">
+                        <mat-option value="">Tümü</mat-option>
+                        <mat-option *ngFor="let kategori of kategoriler" [value]="kategori">
+                          {{kategori}}
+                        </mat-option>
+                      </mat-select>
+                    </mat-form-field>
+
+                    <mat-form-field>
+                      <mat-label>Durum</mat-label>
+                      <mat-select formControlName="durum">
+                        <mat-option value="">Tümü</mat-option>
+                        <mat-option value="Aktif">Aktif</mat-option>
+                        <mat-option value="Kritik">Kritik</mat-option>
+                        <mat-option value="Pasif">Pasif</mat-option>
+                      </mat-select>
+                    </mat-form-field>
+
+                    <mat-form-field>
+                      <mat-label>Tedarikçi</mat-label>
+                      <mat-select formControlName="tedarikci">
+                        <mat-option value="">Tümü</mat-option>
+                        <mat-option *ngFor="let tedarikci of tedarikciler" [value]="tedarikci.unvan">
+                          {{tedarikci.unvan}}
+                        </mat-option>
+                      </mat-select>
+                    </mat-form-field>
+                  </div>
+
+                  <div class="filter-actions">
+                    <button mat-raised-button color="primary" (click)="stokAra()">
+                      <mat-icon>search</mat-icon>
+                      Ara
+                    </button>
+                    <button mat-button (click)="aramaTemizle()">
+                      <mat-icon>clear</mat-icon>
+                      Temizle
+                    </button>
+                  </div>
+                </form>
+              </mat-card-content>
+            </mat-card>
+
+            <!-- Yeni Stok Kalemi Ekleme -->
+            <mat-expansion-panel class="add-panel">
+              <mat-expansion-panel-header>
+                <mat-panel-title>
+                  <mat-icon>add_box</mat-icon>
+                  Yeni Stok Kalemi Ekle
+                </mat-panel-title>
+              </mat-expansion-panel-header>
+
+              <form [formGroup]="stokForm" class="stok-form">
+                <div class="form-row">
+                  <mat-form-field>
+                    <mat-label>Stok Kodu</mat-label>
+                    <input matInput formControlName="kod" placeholder="Örn: ILC001">
+                  </mat-form-field>
+
+                  <mat-form-field>
+                    <mat-label>Stok Adı</mat-label>
+                    <input matInput formControlName="ad">
+                  </mat-form-field>
+
+                  <mat-form-field>
+                    <mat-label>Kategori</mat-label>
+                    <mat-select formControlName="kategori">
+                      <mat-option *ngFor="let kategori of kategoriler" [value]="kategori">
+                        {{kategori}}
+                      </mat-option>
+                    </mat-select>
+                  </mat-form-field>
+                </div>
+
+                <div class="form-row">
+                  <mat-form-field>
+                    <mat-label>Marka</mat-label>
+                    <input matInput formControlName="marka">
+                  </mat-form-field>
+
+                  <mat-form-field>
+                    <mat-label>Model</mat-label>
+                    <input matInput formControlName="model">
+                  </mat-form-field>
+
+                  <mat-form-field>
+                    <mat-label>Birim</mat-label>
+                    <mat-select formControlName="birim">
+                      <mat-option *ngFor="let birim of birimler" [value]="birim">
+                        {{birim}}
+                      </mat-option>
+                    </mat-select>
+                  </mat-form-field>
+                </div>
+
+                <div class="form-row">
+                  <mat-form-field>
+                    <mat-label>Stok Miktarı</mat-label>
+                    <input matInput formControlName="stokMiktari" type="number" placeholder="0">
+                  </mat-form-field>
+
+                  <mat-form-field>
+                    <mat-label>Min Stok Seviyesi</mat-label>
+                    <input matInput formControlName="minStokSeviyesi" type="number" placeholder="0">
+                  </mat-form-field>
+
+                  <mat-form-field>
+                    <mat-label>Max Stok Seviyesi</mat-label>
+                    <input matInput formControlName="maxStokSeviyesi" type="number" placeholder="0">
+                  </mat-form-field>
+                </div>
+
+                <div class="form-row">
+                  <mat-form-field>
+                    <mat-label>Birim Fiyat</mat-label>
+                    <input matInput formControlName="birimFiyat" type="number" step="0.01" placeholder="0.00">
+                    <span matSuffix>₺</span>
+                  </mat-form-field>
+
+                  <mat-form-field>
+                    <mat-label>Son Kullanma Tarihi</mat-label>
+                    <input matInput [matDatepicker]="sonKullanmaPicker" formControlName="sonKullanmaTarihi">
+                    <mat-datepicker-toggle matSuffix [for]="sonKullanmaPicker"></mat-datepicker-toggle>
+                    <mat-datepicker #sonKullanmaPicker></mat-datepicker>
+                  </mat-form-field>
+
+                  <mat-form-field>
+                    <mat-label>Raf No</mat-label>
+                    <input matInput formControlName="rafNo" placeholder="Örn: A1-01">
+                  </mat-form-field>
+                </div>
+
+                <div class="form-row">
+                  <mat-form-field>
+                    <mat-label>Tedarikçi</mat-label>
+                    <mat-select formControlName="tedarikci">
+                      <mat-option *ngFor="let tedarikci of tedarikciler" [value]="tedarikci.unvan">
+                        {{tedarikci.unvan}}
+                      </mat-option>
+                    </mat-select>
+                  </mat-form-field>
+                </div>
+
+                <div class="form-row">
+                  <mat-form-field class="full-width">
+                    <mat-label>Açıklama</mat-label>
+                    <textarea matInput formControlName="aciklama" rows="2"></textarea>
+                  </mat-form-field>
+                </div>
+
+                <div class="form-actions">
+                  <button mat-raised-button color="primary" (click)="stokEkle()" [disabled]="stokForm.invalid">
+                    <mat-icon>save</mat-icon>
+                    Stok Kalemi Ekle
+                  </button>
+                </div>
+              </form>
+            </mat-expansion-panel>
+
+            <!-- Stok Listesi -->
+            <mat-card class="table-card">
+              <mat-card-header>
+                <mat-card-title>Stok Listesi</mat-card-title>
+              </mat-card-header>
+              <mat-card-content>
+                <mat-table [dataSource]="filteredStokKalemleri" class="stok-table">
+                  <!-- Kod Kolonu -->
+                  <ng-container matColumnDef="kod">
+                    <mat-header-cell *matHeaderCellDef>Kod</mat-header-cell>
+                    <mat-cell *matCellDef="let stok">{{stok.kod}}</mat-cell>
+                  </ng-container>
+
+                  <!-- Ad Kolonu -->
+                  <ng-container matColumnDef="ad">
+                    <mat-header-cell *matHeaderCellDef>Stok Kalemi</mat-header-cell>
+                    <mat-cell *matCellDef="let stok">
+                      <div class="stok-info">
+                        <div class="stok-name">{{stok.ad}}</div>
+                        <div class="stok-details">{{stok.marka}} {{stok.model}}</div>
+                        <div class="stok-raf">Raf: {{stok.rafNo}}</div>
+                      </div>
+                    </mat-cell>
+                  </ng-container>
+
+                  <!-- Kategori Kolonu -->
+                  <ng-container matColumnDef="kategori">
+                    <mat-header-cell *matHeaderCellDef>Kategori</mat-header-cell>
+                    <mat-cell *matCellDef="let stok">{{stok.kategori}}</mat-cell>
+                  </ng-container>
+
+                  <!-- Stok Miktarı Kolonu -->
+                  <ng-container matColumnDef="stokMiktari">
+                    <mat-header-cell *matHeaderCellDef>Stok Durumu</mat-header-cell>
+                    <mat-cell *matCellDef="let stok">
+                      <div class="stok-durum">
+                        <div class="miktar-info">
+                          <span class="miktar">{{stok.stokMiktari}}</span>
+                          <span class="birim">{{stok.birim}}</span>
+                        </div>
+                        <mat-progress-bar 
+                          [value]="getStokSeviyeYuzde(stok)" 
+                          [ngClass]="getStokSeviyeClass(stok)"
+                          class="stok-progress">
+                        </mat-progress-bar>
+                        <div class="seviye-info">
+                          Min: {{stok.minStokSeviyesi}} / Max: {{stok.maxStokSeviyesi}}
+                        </div>
+                      </div>
+                    </mat-cell>
+                  </ng-container>
+
+                  <!-- Birim Fiyat Kolonu -->
+                  <ng-container matColumnDef="birimFiyat">
+                    <mat-header-cell *matHeaderCellDef>Fiyat Bilgisi</mat-header-cell>
+                    <mat-cell *matCellDef="let stok">
+                      <div class="fiyat-info">
+                        <div class="birim-fiyat">{{stok.birimFiyat | currency:'TRY':'symbol':'1.2-2'}}</div>
+                        <div class="toplam-deger">Toplam: {{stok.toplamDeger | currency:'TRY':'symbol':'1.2-2'}}</div>
+                      </div>
+                    </mat-cell>
+                  </ng-container>
+
+                  <!-- Durum Kolonu -->
+                  <ng-container matColumnDef="durum">
+                    <mat-header-cell *matHeaderCellDef>Durum</mat-header-cell>
+                    <mat-cell *matCellDef="let stok">
+                      <mat-chip [ngClass]="getDurumClass(stok.durum)">
+                        {{stok.durum}}
+                      </mat-chip>
+                    </mat-cell>
+                  </ng-container>
+
+                  <!-- İşlemler Kolonu -->
+                  <ng-container matColumnDef="islemler">
+                    <mat-header-cell *matHeaderCellDef>İşlemler</mat-header-cell>
+                    <mat-cell *matCellDef="let stok">
+                      <button mat-icon-button color="primary" (click)="stokDuzenle(stok)">
+                        <mat-icon>edit</mat-icon>
+                      </button>
+                      <button mat-icon-button color="warn" (click)="stokSil(stok.id)">
+                        <mat-icon>delete</mat-icon>
+                      </button>
+                    </mat-cell>
+                  </ng-container>
+
+                  <mat-header-row *matHeaderRowDef="stokColumns"></mat-header-row>
+                  <mat-row *matRowDef="let row; columns: stokColumns;"></mat-row>
+                </mat-table>
+              </mat-card-content>
+            </mat-card>
+          </div>
+        </mat-tab>
+
+        <!-- Stok Hareketleri -->
+        <mat-tab label="Stok Hareketleri" matBadge="{{stokHareketleri.length}}">
+          <div class="tab-content">
+            <!-- Yeni Hareket Ekleme -->
+            <mat-card class="add-card">
+              <mat-card-header>
+                <mat-card-title>
+                  <mat-icon>sync_alt</mat-icon>
+                  Yeni Stok Hareketi
+                </mat-card-title>
+              </mat-card-header>
+              <mat-card-content>
+                <form [formGroup]="hareketForm" class="hareket-form">
+                  <div class="form-row">
+                    <mat-form-field>
+                      <mat-label>Stok Kalemi</mat-label>
+                      <mat-select formControlName="stokKalemiId">
+                        <mat-option *ngFor="let stok of stokKalemleri" [value]="stok.id">
+                          {{stok.kod}} - {{stok.ad}}
+                        </mat-option>
+                      </mat-select>
+                    </mat-form-field>
+
+                    <mat-form-field>
+                      <mat-label>Hareket Tipi</mat-label>
+                      <mat-select formControlName="hareketTipi">
+                        <mat-option *ngFor="let tip of hareketTipleri" [value]="tip">
+                          {{tip}}
+                        </mat-option>
+                      </mat-select>
+                    </mat-form-field>
+
+                    <mat-form-field>
+                      <mat-label>Miktar</mat-label>
+                      <input matInput formControlName="miktar" type="number" step="0.01" placeholder="0">
+                    </mat-form-field>
+                  </div>
+
+                  <div class="form-row">
+                    <mat-form-field>
+                      <mat-label>Birim Fiyat</mat-label>
+                      <input matInput formControlName="birimFiyat" type="number" step="0.01" placeholder="0.00">
+                      <span matSuffix>₺</span>
+                    </mat-form-field>
+
+                    <mat-form-field>
+                      <mat-label>Belge No</mat-label>
+                      <input matInput formControlName="belgeNo" placeholder="Ör: FIS001">
+                    </mat-form-field>
+                  </div>
+
+                  <div class="form-row">
+                    <mat-form-field class="full-width">
+                      <mat-label>Açıklama</mat-label>
+                      <textarea matInput formControlName="aciklama" rows="2"></textarea>
+                    </mat-form-field>
+                  </div>
+
+                  <div class="form-actions">
+                    <button mat-raised-button color="primary" (click)="stokHareketiEkle()" [disabled]="hareketForm.invalid">
+                      <mat-icon>add</mat-icon>
+                      Hareket Ekle
+                    </button>
+                  </div>
+                </form>
+              </mat-card-content>
+            </mat-card>
+
+            <!-- Hareket Listesi -->
+            <mat-card class="table-card">
+              <mat-card-header>
+                <mat-card-title>Stok Hareketleri</mat-card-title>
+              </mat-card-header>
+              <mat-card-content>
+                <mat-table [dataSource]="stokHareketleri" class="hareket-table">
+                  <!-- Tarih Kolonu -->
+                  <ng-container matColumnDef="tarih">
+                    <mat-header-cell *matHeaderCellDef>Tarih</mat-header-cell>
+                    <mat-cell *matCellDef="let hareket">{{hareket.tarih | date:'dd/MM/yyyy HH:mm'}}</mat-cell>
+                  </ng-container>
+
+                  <!-- Stok Kalemi Kolonu -->
+                  <ng-container matColumnDef="stokKalemi">
+                    <mat-header-cell *matHeaderCellDef>Stok Kalemi</mat-header-cell>
+                    <mat-cell *matCellDef="let hareket">{{hareket.stokKalemiAdi}}</mat-cell>
+                  </ng-container>
+
+                  <!-- Hareket Tipi Kolonu -->
+                  <ng-container matColumnDef="hareketTipi">
+                    <mat-header-cell *matHeaderCellDef>Hareket Tipi</mat-header-cell>
+                    <mat-cell *matCellDef="let hareket">
+                      <mat-chip [ngClass]="hareket.hareketTipi === 'Giriş' ? 'giris-chip' : 
+                                           hareket.hareketTipi === 'Çıkış' ? 'cikis-chip' : 'transfer-chip'">
+                        {{hareket.hareketTipi}}
+                      </mat-chip>
+                    </mat-cell>
+                  </ng-container>
+
+                  <!-- Miktar Kolonu -->
+                  <ng-container matColumnDef="miktar">
+                    <mat-header-cell *matHeaderCellDef>Miktar Değişimi</mat-header-cell>
+                    <mat-cell *matCellDef="let hareket">
+                      <div class="miktar-degisim">
+                        <div class="onceki">Önceki: {{hareket.oncekiMiktar}}</div>
+                        <div class="hareket" [ngClass]="hareket.hareketTipi === 'Giriş' ? 'artis' : 'azalis'">
+                          {{hareket.hareketTipi === 'Giriş' ? '+' : '-'}}{{hareket.miktar}}
+                        </div>
+                        <div class="yeni">Yeni: {{hareket.yeniMiktar}}</div>
+                      </div>
+                    </mat-cell>
+                  </ng-container>
+
+                  <!-- Kullanıcı Kolonu -->
+                  <ng-container matColumnDef="kullanici">
+                    <mat-header-cell *matHeaderCellDef>Kullanıcı</mat-header-cell>
+                    <mat-cell *matCellDef="let hareket">{{hareket.kullanici}}</mat-cell>
+                  </ng-container>
+
+                  <!-- İşlemler Kolonu -->
+                  <ng-container matColumnDef="islemler">
+                    <mat-header-cell *matHeaderCellDef>İşlemler</mat-header-cell>
+                    <mat-cell *matCellDef="let hareket">
+                      <button mat-icon-button color="primary">
+                        <mat-icon>visibility</mat-icon>
+                      </button>
+                    </mat-cell>
+                  </ng-container>
+
+                  <mat-header-row *matHeaderRowDef="hareketColumns"></mat-header-row>
+                  <mat-row *matRowDef="let row; columns: hareketColumns;"></mat-row>
+                </mat-table>
+              </mat-card-content>
+            </mat-card>
+          </div>
+        </mat-tab>
+
+        <!-- Tedarikçiler -->
+        <mat-tab label="Tedarikçiler" matBadge="{{tedarikciler.length}}">
+          <div class="tab-content">
+            <!-- Yeni Tedarikçi Ekleme -->
+            <mat-card class="add-card">
+              <mat-card-header>
+                <mat-card-title>
+                  <mat-icon>business</mat-icon>
+                  Yeni Tedarikçi Ekle
+                </mat-card-title>
+              </mat-card-header>
+              <mat-card-content>
+                <form [formGroup]="tedarikciForm" class="tedarikci-form">
+                  <div class="form-row">
+                    <mat-form-field>
+                      <mat-label>Tedarikçi Kodu</mat-label>
+                      <input matInput formControlName="kod" placeholder="Örn: TED001">
+                    </mat-form-field>
+
+                    <mat-form-field>
+                      <mat-label>Ünvan</mat-label>
+                      <input matInput formControlName="unvan">
+                    </mat-form-field>
+
+                    <mat-form-field>
+                      <mat-label>Yetkili Kişi</mat-label>
+                      <input matInput formControlName="yetkiliKisi">
+                    </mat-form-field>
+                  </div>
+
+                  <div class="form-row">
+                    <mat-form-field>
+                      <mat-label>Telefon</mat-label>
+                      <input matInput formControlName="telefon" placeholder="0212 555 1111">
+                    </mat-form-field>
+
+                    <mat-form-field>
+                      <mat-label>E-mail</mat-label>
+                      <input matInput formControlName="email" type="email">
+                    </mat-form-field>
+
+                    <mat-form-field>
+                      <mat-label>Vergi No</mat-label>
+                      <input matInput formControlName="vergiNo">
+                    </mat-form-field>
+                  </div>
+
+                  <div class="form-row">
+                    <mat-form-field class="full-width">
+                      <mat-label>Adres</mat-label>
+                      <textarea matInput formControlName="adres" rows="2"></textarea>
+                    </mat-form-field>
+                  </div>
+
+                  <div class="form-actions">
+                    <button mat-raised-button color="primary" (click)="tedarikciEkle()" [disabled]="tedarikciForm.invalid">
+                      <mat-icon>save</mat-icon>
+                      Tedarikçi Ekle
+                    </button>
+                  </div>
+                </form>
+              </mat-card-content>
+            </mat-card>
+
+            <!-- Tedarikçi Listesi -->
+            <mat-card class="table-card">
+              <mat-card-header>
+                <mat-card-title>Tedarikçi Listesi</mat-card-title>
+              </mat-card-header>
+              <mat-card-content>
+                <mat-table [dataSource]="tedarikciler" class="tedarikci-table">
+                  <!-- Kod Kolonu -->
+                  <ng-container matColumnDef="kod">
+                    <mat-header-cell *matHeaderCellDef>Kod</mat-header-cell>
+                    <mat-cell *matCellDef="let tedarikci">{{tedarikci.kod}}</mat-cell>
+                  </ng-container>
+
+                  <!-- Ünvan Kolonu -->
+                  <ng-container matColumnDef="unvan">
+                    <mat-header-cell *matHeaderCellDef>Ünvan</mat-header-cell>
+                    <mat-cell *matCellDef="let tedarikci">{{tedarikci.unvan}}</mat-cell>
+                  </ng-container>
+
+                  <!-- Yetkili Kişi Kolonu -->
+                  <ng-container matColumnDef="yetkiliKisi">
+                    <mat-header-cell *matHeaderCellDef>Yetkili Kişi</mat-header-cell>
+                    <mat-cell *matCellDef="let tedarikci">{{tedarikci.yetkiliKisi}}</mat-cell>
+                  </ng-container>
+
+                  <!-- Telefon Kolonu -->
+                  <ng-container matColumnDef="telefon">
+                    <mat-header-cell *matHeaderCellDef>İletişim</mat-header-cell>
+                    <mat-cell *matCellDef="let tedarikci">
+                      <div class="iletisim-info">
+                        <div>{{tedarikci.telefon}}</div>
+                        <div class="email">{{tedarikci.email}}</div>
+                      </div>
+                    </mat-cell>
+                  </ng-container>
+
+                  <!-- Durum Kolonu -->
+                  <ng-container matColumnDef="durum">
+                    <mat-header-cell *matHeaderCellDef>Durum</mat-header-cell>
+                    <mat-cell *matCellDef="let tedarikci">
+                      <mat-chip [ngClass]="getDurumClass(tedarikci.durum)">
+                        {{tedarikci.durum}}
+                      </mat-chip>
+                    </mat-cell>
+                  </ng-container>
+
+                  <!-- İşlemler Kolonu -->
+                  <ng-container matColumnDef="islemler">
+                    <mat-header-cell *matHeaderCellDef>İşlemler</mat-header-cell>
+                    <mat-cell *matCellDef="let tedarikci">
+                      <button mat-icon-button color="primary" (click)="tedarikciDuzenle(tedarikci)">
+                        <mat-icon>edit</mat-icon>
+                      </button>
+                      <button mat-icon-button color="warn" (click)="tedarikciSil(tedarikci.id)">
+                        <mat-icon>delete</mat-icon>
+                      </button>
+                    </mat-cell>
+                  </ng-container>
+
+                  <mat-header-row *matHeaderRowDef="tedarikciColumns"></mat-header-row>
+                  <mat-row *matRowDef="let row; columns: tedarikciColumns;"></mat-row>
+                </mat-table>
+              </mat-card-content>
+            </mat-card>
+          </div>
+        </mat-tab>
+
+        <!-- Talep Yönetimi -->
+        <mat-tab label="Talep Yönetimi" matBadge="{{bekleyenTalepler.length}}">
+          <div class="tab-content">
+            <!-- Yeni Talep Oluşturma -->
+            <mat-card class="add-card">
+              <mat-card-header>
+                <mat-card-title>
+                  <mat-icon>request_quote</mat-icon>
+                  Yeni Talep Oluştur
+                </mat-card-title>
+              </mat-card-header>
+              <mat-card-content>
+                <form [formGroup]="talepForm" class="talep-form">
+                  <div class="form-row">
+                    <mat-form-field>
+                      <mat-label>Departman</mat-label>
+                      <mat-select formControlName="departman">
+                        <mat-option *ngFor="let departman of departmanlar" [value]="departman">
+                          {{departman}}
+                        </mat-option>
+                      </mat-select>
+                    </mat-form-field>
+
+                    <mat-form-field>
+                      <mat-label>Talep Eden</mat-label>
+                      <input matInput formControlName="talepEden">
+                    </mat-form-field>
+                  </div>
+
+                  <div class="form-row">
+                    <mat-form-field class="full-width">
+                      <mat-label>Açıklama</mat-label>
+                      <textarea matInput formControlName="aciklama" rows="3"></textarea>
+                    </mat-form-field>
+                  </div>
+
+                  <div class="form-actions">
+                    <button mat-raised-button color="primary" (click)="talepOlustur()" [disabled]="talepForm.invalid">
+                      <mat-icon>send</mat-icon>
+                      Talep Oluştur
+                    </button>
+                  </div>
+                </form>
+              </mat-card-content>
+            </mat-card>
+
+            <!-- Talep Listesi -->
+            <mat-card class="table-card">
+              <mat-card-header>
+                <mat-card-title>Talep Listesi</mat-card-title>
+              </mat-card-header>
+              <mat-card-content>
+                <mat-table [dataSource]="talepFormlari" class="talep-table">
+                  <!-- Departman Kolonu -->
+                  <ng-container matColumnDef="departman">
+                    <mat-header-cell *matHeaderCellDef>Departman</mat-header-cell>
+                    <mat-cell *matCellDef="let talep">{{talep.departman}}</mat-cell>
+                  </ng-container>
+
+                  <!-- Talep Eden Kolonu -->
+                  <ng-container matColumnDef="talepEden">
+                    <mat-header-cell *matHeaderCellDef>Talep Eden</mat-header-cell>
+                    <mat-cell *matCellDef="let talep">{{talep.talepEden}}</mat-cell>
+                  </ng-container>
+
+                  <!-- Talep Tarihi Kolonu -->
+                  <ng-container matColumnDef="talepTarihi">
+                    <mat-header-cell *matHeaderCellDef>Talep Tarihi</mat-header-cell>
+                    <mat-cell *matCellDef="let talep">{{talep.talepTarihi | date:'dd/MM/yyyy'}}</mat-cell>
+                  </ng-container>
+
+                  <!-- Durum Kolonu -->
+                  <ng-container matColumnDef="durum">
+                    <mat-header-cell *matHeaderCellDef>Durum</mat-header-cell>
+                    <mat-cell *matCellDef="let talep">
+                      <mat-chip [ngClass]="getTalepDurumClass(talep.durum)">
+                        {{talep.durum}}
+                      </mat-chip>
+                    </mat-cell>
+                  </ng-container>
+
+                  <!-- İşlemler Kolonu -->
+                  <ng-container matColumnDef="islemler">
+                    <mat-header-cell *matHeaderCellDef>İşlemler</mat-header-cell>
+                    <mat-cell *matCellDef="let talep">
+                      <button mat-icon-button color="primary" 
+                              [disabled]="talep.durum !== 'Bekliyor'"
+                              (click)="talepOnayla(talep.id)">
+                        <mat-icon>check</mat-icon>
+                      </button>
+                      <button mat-icon-button color="warn"
+                              [disabled]="talep.durum !== 'Bekliyor'"
+                              (click)="talepReddet(talep.id)">
+                        <mat-icon>close</mat-icon>
+                      </button>
+                    </mat-cell>
+                  </ng-container>
+
+                  <mat-header-row *matHeaderRowDef="talepColumns"></mat-header-row>
+                  <mat-row *matRowDef="let row; columns: talepColumns;"></mat-row>
+                </mat-table>
+              </mat-card-content>
+            </mat-card>
+          </div>
+        </mat-tab>
+      </mat-tab-group>
+    </mat-card-content>
+  </mat-card>
+</div>

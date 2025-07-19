@@ -1,0 +1,578 @@
+<div class="ik-container">
+  <mat-card>
+    <mat-card-header>
+      <mat-card-title>
+        <mat-icon>groups</mat-icon>
+        İnsan Kaynakları Yönetimi
+      </mat-card-title>
+      <mat-card-subtitle>Personel, İzin ve Vardiya Takip Sistemi</mat-card-subtitle>
+    </mat-card-header>
+
+    <mat-card-content>
+      <!-- İstatistik Kartları -->
+      <div class="stats-row">
+        <mat-card class="stat-card">
+          <mat-card-content>
+            <div class="stat-content">
+              <mat-icon class="stat-icon personel-icon">groups</mat-icon>
+              <div class="stat-text">
+                <div class="stat-number">{{personeller.length}}</div>
+                <div class="stat-label">Toplam Personel</div>
+              </div>
+            </div>
+          </mat-card-content>
+        </mat-card>
+
+        <mat-card class="stat-card">
+          <mat-card-content>
+            <div class="stat-content">
+              <mat-icon class="stat-icon izin-icon">event_available</mat-icon>
+              <div class="stat-text">
+                <div class="stat-number">{{bekleyenIzinler.length}}</div>
+                <div class="stat-label">Bekleyen İzin</div>
+              </div>
+            </div>
+          </mat-card-content>
+        </mat-card>
+
+        <mat-card class="stat-card">
+          <mat-card-content>
+            <div class="stat-content">
+              <mat-icon class="stat-icon vardiya-icon">schedule</mat-icon>
+              <div class="stat-text">
+                <div class="stat-number">{{vardiyaPlanlari.length}}</div>
+                <div class="stat-label">Vardiya Planı</div>
+              </div>
+            </div>
+          </mat-card-content>
+        </mat-card>
+
+        <mat-card class="stat-card">
+          <mat-card-content>
+            <div class="stat-content">
+              <mat-icon class="stat-icon aktif-icon">person_check</mat-icon>
+              <div class="stat-text">
+                <div class="stat-number">{{getAktifPersonelSayisi()}}</div>
+                <div class="stat-label">Aktif Personel</div>
+              </div>
+            </div>
+          </mat-card-content>
+        </mat-card>
+      </div>
+
+      <mat-divider></mat-divider>
+
+      <!-- Tab Menüsü -->
+      <mat-tab-group [(selectedIndex)]="selectedTab">
+        <!-- Personel Yönetimi -->
+        <mat-tab label="Personel Yönetimi" matBadge="{{personeller.length}}">
+          <div class="tab-content">
+            <!-- Arama ve Filtreleme -->
+            <mat-card class="filter-card">
+              <mat-card-header>
+                <mat-card-title>Personel Arama ve Filtreleme</mat-card-title>
+              </mat-card-header>
+              <mat-card-content>
+                <form [formGroup]="aramaForm" class="filter-form">
+                  <div class="filter-row">
+                    <mat-form-field>
+                      <mat-label>Arama</mat-label>
+                      <input matInput formControlName="aramaTerimi" placeholder="Ad, soyad, sicil no...">
+                      <mat-icon matSuffix>search</mat-icon>
+                    </mat-form-field>
+
+                    <mat-form-field>
+                      <mat-label>Departman</mat-label>
+                      <mat-select formControlName="departman">
+                        <mat-option value="">Tümü</mat-option>
+                        <mat-option *ngFor="let departman of departmanlar" [value]="departman">
+                          {{departman}}
+                        </mat-option>
+                      </mat-select>
+                    </mat-form-field>
+
+                    <mat-form-field>
+                      <mat-label>Pozisyon</mat-label>
+                      <mat-select formControlName="pozisyon">
+                        <mat-option value="">Tümü</mat-option>
+                        <mat-option *ngFor="let pozisyon of pozisyonlar" [value]="pozisyon">
+                          {{pozisyon}}
+                        </mat-option>
+                      </mat-select>
+                    </mat-form-field>
+
+                    <mat-form-field>
+                      <mat-label>Durum</mat-label>
+                      <mat-select formControlName="durum">
+                        <mat-option value="">Tümü</mat-option>
+                        <mat-option value="Aktif">Aktif</mat-option>
+                        <mat-option value="İzinli">İzinli</mat-option>
+                        <mat-option value="Pasif">Pasif</mat-option>
+                      </mat-select>
+                    </mat-form-field>
+                  </div>
+
+                  <div class="filter-actions">
+                    <button mat-raised-button color="primary" (click)="personelAra()">
+                      <mat-icon>search</mat-icon>
+                      Ara
+                    </button>
+                    <button mat-button (click)="aramaTemizle()">
+                      <mat-icon>clear</mat-icon>
+                      Temizle
+                    </button>
+                  </div>
+                </form>
+              </mat-card-content>
+            </mat-card>
+
+            <!-- Yeni Personel Ekleme -->
+            <mat-expansion-panel class="add-panel">
+              <mat-expansion-panel-header>
+                <mat-panel-title>
+                  <mat-icon>person_add</mat-icon>
+                  Yeni Personel Ekle
+                </mat-panel-title>
+              </mat-expansion-panel-header>
+
+              <form [formGroup]="personelForm" class="personel-form">
+                <div class="form-row">
+                  <mat-form-field>
+                    <mat-label>TC Kimlik No</mat-label>
+                    <input matInput formControlName="tcKimlik" placeholder="11 haneli TC kimlik">
+                  </mat-form-field>
+
+                  <mat-form-field>
+                    <mat-label>Ad</mat-label>
+                    <input matInput formControlName="ad">
+                  </mat-form-field>
+
+                  <mat-form-field>
+                    <mat-label>Soyad</mat-label>
+                    <input matInput formControlName="soyad">
+                  </mat-form-field>
+                </div>
+
+                <div class="form-row">
+                  <mat-form-field>
+                    <mat-label>Telefon</mat-label>
+                    <input matInput formControlName="telefon" placeholder="0532 111 1111">
+                  </mat-form-field>
+
+                  <mat-form-field>
+                    <mat-label>E-mail</mat-label>
+                    <input matInput formControlName="email" type="email">
+                  </mat-form-field>
+
+                  <mat-form-field>
+                    <mat-label>Doğum Tarihi</mat-label>
+                    <input matInput [matDatepicker]="dogumPicker" formControlName="dogumTarihi">
+                    <mat-datepicker-toggle matSuffix [for]="dogumPicker"></mat-datepicker-toggle>
+                    <mat-datepicker #dogumPicker></mat-datepicker>
+                  </mat-form-field>
+                </div>
+
+                <div class="form-row">
+                  <mat-form-field>
+                    <mat-label>Cinsiyet</mat-label>
+                    <mat-select formControlName="cinsiyet">
+                      <mat-option value="Erkek">Erkek</mat-option>
+                      <mat-option value="Kadın">Kadın</mat-option>
+                    </mat-select>
+                  </mat-form-field>
+
+                  <mat-form-field>
+                    <mat-label>Pozisyon</mat-label>
+                    <mat-select formControlName="pozisyon">
+                      <mat-option *ngFor="let pozisyon of pozisyonlar" [value]="pozisyon">
+                        {{pozisyon}}
+                      </mat-option>
+                    </mat-select>
+                  </mat-form-field>
+
+                  <mat-form-field>
+                    <mat-label>Departman</mat-label>
+                    <mat-select formControlName="departman">
+                      <mat-option *ngFor="let departman of departmanlar" [value]="departman">
+                        {{departman}}
+                      </mat-option>
+                    </mat-select>
+                  </mat-form-field>
+                </div>
+
+                <div class="form-row">
+                  <mat-form-field>
+                    <mat-label>Maaş</mat-label>
+                    <input matInput formControlName="maas" type="number" placeholder="0">
+                    <span matSuffix>₺</span>
+                  </mat-form-field>
+
+                  <mat-form-field>
+                    <mat-label>İşe Başlama Tarihi</mat-label>
+                    <input matInput [matDatepicker]="baslamaPicker" formControlName="iseBaslamaTarihi">
+                    <mat-datepicker-toggle matSuffix [for]="baslamaPicker"></mat-datepicker-toggle>
+                    <mat-datepicker #baslamaPicker></mat-datepicker>
+                  </mat-form-field>
+
+                  <mat-form-field>
+                    <mat-label>Deneyim Yılı</mat-label>
+                    <input matInput formControlName="deneyimYili" type="number" placeholder="0">
+                  </mat-form-field>
+                </div>
+
+                <div class="form-row">
+                  <mat-form-field class="full-width">
+                    <mat-label>Adres</mat-label>
+                    <textarea matInput formControlName="adres" rows="2"></textarea>
+                  </mat-form-field>
+                </div>
+
+                <div class="form-row">
+                  <mat-form-field class="full-width">
+                    <mat-label>Ünvan</mat-label>
+                    <input matInput formControlName="unvan" placeholder="Ör: Uzman Doktor, Başhemşire">
+                  </mat-form-field>
+                </div>
+
+                <div class="form-actions">
+                  <button mat-raised-button color="primary" (click)="personelEkle()" [disabled]="personelForm.invalid">
+                    <mat-icon>save</mat-icon>
+                    Personel Ekle
+                  </button>
+                </div>
+              </form>
+            </mat-expansion-panel>
+
+            <!-- Personel Listesi -->
+            <mat-card class="table-card">
+              <mat-card-header>
+                <mat-card-title>Personel Listesi</mat-card-title>
+              </mat-card-header>
+              <mat-card-content>
+                <mat-table [dataSource]="filteredPersoneller" class="personel-table">
+                  <!-- Sicil No Kolonu -->
+                  <ng-container matColumnDef="sicilNo">
+                    <mat-header-cell *matHeaderCellDef>Sicil No</mat-header-cell>
+                    <mat-cell *matCellDef="let personel">{{personel.sicilNo}}</mat-cell>
+                  </ng-container>
+
+                  <!-- Ad Soyad Kolonu -->
+                  <ng-container matColumnDef="adSoyad">
+                    <mat-header-cell *matHeaderCellDef>Ad Soyad</mat-header-cell>
+                    <mat-cell *matCellDef="let personel">
+                      <div class="personel-info">
+                        <div class="personel-name">{{personel.ad}} {{personel.soyad}}</div>
+                        <div class="personel-title">{{personel.unvan}}</div>
+                      </div>
+                    </mat-cell>
+                  </ng-container>
+
+                  <!-- Pozisyon Kolonu -->
+                  <ng-container matColumnDef="pozisyon">
+                    <mat-header-cell *matHeaderCellDef>Pozisyon</mat-header-cell>
+                    <mat-cell *matCellDef="let personel">{{personel.pozisyon}}</mat-cell>
+                  </ng-container>
+
+                  <!-- Departman Kolonu -->
+                  <ng-container matColumnDef="departman">
+                    <mat-header-cell *matHeaderCellDef>Departman</mat-header-cell>
+                    <mat-cell *matCellDef="let personel">{{personel.departman}}</mat-cell>
+                  </ng-container>
+
+                  <!-- Telefon Kolonu -->
+                  <ng-container matColumnDef="telefon">
+                    <mat-header-cell *matHeaderCellDef>İletişim</mat-header-cell>
+                    <mat-cell *matCellDef="let personel">
+                      <div class="contact-info">
+                        <div>{{personel.telefon}}</div>
+                        <div class="email">{{personel.email}}</div>
+                      </div>
+                    </mat-cell>
+                  </ng-container>
+
+                  <!-- Durum Kolonu -->
+                  <ng-container matColumnDef="durum">
+                    <mat-header-cell *matHeaderCellDef>Durum</mat-header-cell>
+                    <mat-cell *matCellDef="let personel">
+                      <mat-chip [ngClass]="getDurumClass(personel.durum)">
+                        {{personel.durum}}
+                      </mat-chip>
+                    </mat-cell>
+                  </ng-container>
+
+                  <!-- İşlemler Kolonu -->
+                  <ng-container matColumnDef="islemler">
+                    <mat-header-cell *matHeaderCellDef>İşlemler</mat-header-cell>
+                    <mat-cell *matCellDef="let personel">
+                      <button mat-icon-button color="primary" (click)="personelDuzenle(personel)">
+                        <mat-icon>edit</mat-icon>
+                      </button>
+                      <button mat-icon-button color="warn" (click)="personelSil(personel.id)">
+                        <mat-icon>delete</mat-icon>
+                      </button>
+                    </mat-cell>
+                  </ng-container>
+
+                  <mat-header-row *matHeaderRowDef="personelColumns"></mat-header-row>
+                  <mat-row *matRowDef="let row; columns: personelColumns;"></mat-row>
+                </mat-table>
+              </mat-card-content>
+            </mat-card>
+          </div>
+        </mat-tab>
+
+        <!-- İzin Yönetimi -->
+        <mat-tab label="İzin Yönetimi" matBadge="{{bekleyenIzinler.length}}">
+          <div class="tab-content">
+            <!-- Yeni İzin Talebi -->
+            <mat-card class="add-card">
+              <mat-card-header>
+                <mat-card-title>
+                  <mat-icon>event_available</mat-icon>
+                  Yeni İzin Talebi
+                </mat-card-title>
+              </mat-card-header>
+              <mat-card-content>
+                <form [formGroup]="izinForm" class="izin-form">
+                  <div class="form-row">
+                    <mat-form-field>
+                      <mat-label>Personel</mat-label>
+                      <mat-select formControlName="personelId">
+                        <mat-option *ngFor="let personel of personeller" [value]="personel.id">
+                          {{personel.ad}} {{personel.soyad}} - {{personel.sicilNo}}
+                        </mat-option>
+                      </mat-select>
+                    </mat-form-field>
+
+                    <mat-form-field>
+                      <mat-label>İzin Tipi</mat-label>
+                      <mat-select formControlName="izinTipi">
+                        <mat-option *ngFor="let tip of izinTipleri" [value]="tip">
+                          {{tip}}
+                        </mat-option>
+                      </mat-select>
+                    </mat-form-field>
+                  </div>
+
+                  <div class="form-row">
+                    <mat-form-field>
+                      <mat-label>Başlangıç Tarihi</mat-label>
+                      <input matInput [matDatepicker]="baslangicPicker" formControlName="baslangicTarihi">
+                      <mat-datepicker-toggle matSuffix [for]="baslangicPicker"></mat-datepicker-toggle>
+                      <mat-datepicker #baslangicPicker></mat-datepicker>
+                    </mat-form-field>
+
+                    <mat-form-field>
+                      <mat-label>Bitiş Tarihi</mat-label>
+                      <input matInput [matDatepicker]="bitisPicker" formControlName="bitisTarihi">
+                      <mat-datepicker-toggle matSuffix [for]="bitisPicker"></mat-datepicker-toggle>
+                      <mat-datepicker #bitisPicker></mat-datepicker>
+                    </mat-form-field>
+                  </div>
+
+                  <div class="form-row">
+                    <mat-form-field class="full-width">
+                      <mat-label>Açıklama</mat-label>
+                      <textarea matInput formControlName="aciklama" rows="3"></textarea>
+                    </mat-form-field>
+                  </div>
+
+                  <div class="form-actions">
+                    <button mat-raised-button color="primary" (click)="izinTalebiOlustur()" [disabled]="izinForm.invalid">
+                      <mat-icon>send</mat-icon>
+                      İzin Talebi Oluştur
+                    </button>
+                  </div>
+                </form>
+              </mat-card-content>
+            </mat-card>
+
+            <!-- İzin Talepleri Listesi -->
+            <mat-card class="table-card">
+              <mat-card-header>
+                <mat-card-title>İzin Talepleri</mat-card-title>
+              </mat-card-header>
+              <mat-card-content>
+                <mat-table [dataSource]="izinTalepleri" class="izin-table">
+                  <!-- Personel Adı Kolonu -->
+                  <ng-container matColumnDef="personelAdi">
+                    <mat-header-cell *matHeaderCellDef>Personel</mat-header-cell>
+                    <mat-cell *matCellDef="let izin">{{izin.personelAdi}}</mat-cell>
+                  </ng-container>
+
+                  <!-- İzin Tipi Kolonu -->
+                  <ng-container matColumnDef="izinTipi">
+                    <mat-header-cell *matHeaderCellDef>İzin Tipi</mat-header-cell>
+                    <mat-cell *matCellDef="let izin">{{izin.izinTipi}}</mat-cell>
+                  </ng-container>
+
+                  <!-- Tarih Aralığı Kolonu -->
+                  <ng-container matColumnDef="tarihAraligi">
+                    <mat-header-cell *matHeaderCellDef>Tarih Aralığı</mat-header-cell>
+                    <mat-cell *matCellDef="let izin">
+                      <div class="tarih-aralik">
+                        <div>{{izin.baslangicTarihi | date:'dd/MM/yyyy'}}</div>
+                        <div>{{izin.bitisTarihi | date:'dd/MM/yyyy'}}</div>
+                      </div>
+                    </mat-cell>
+                  </ng-container>
+
+                  <!-- Gün Kolonu -->
+                  <ng-container matColumnDef="gun">
+                    <mat-header-cell *matHeaderCellDef>Gün</mat-header-cell>
+                    <mat-cell *matCellDef="let izin">{{izin.gun}} gün</mat-cell>
+                  </ng-container>
+
+                  <!-- Durum Kolonu -->
+                  <ng-container matColumnDef="durum">
+                    <mat-header-cell *matHeaderCellDef>Durum</mat-header-cell>
+                    <mat-cell *matCellDef="let izin">
+                      <mat-chip [ngClass]="getIzinDurumClass(izin.durum)">
+                        {{izin.durum}}
+                      </mat-chip>
+                    </mat-cell>
+                  </ng-container>
+
+                  <!-- İşlemler Kolonu -->
+                  <ng-container matColumnDef="islemler">
+                    <mat-header-cell *matHeaderCellDef>İşlemler</mat-header-cell>
+                    <mat-cell *matCellDef="let izin">
+                      <button mat-icon-button color="primary" 
+                              [disabled]="izin.durum !== 'Bekliyor'"
+                              (click)="izinOnayla(izin.id)">
+                        <mat-icon>check</mat-icon>
+                      </button>
+                      <button mat-icon-button color="warn"
+                              [disabled]="izin.durum !== 'Bekliyor'"
+                              (click)="izinReddet(izin.id)">
+                        <mat-icon>close</mat-icon>
+                      </button>
+                    </mat-cell>
+                  </ng-container>
+
+                  <mat-header-row *matHeaderRowDef="izinColumns"></mat-header-row>
+                  <mat-row *matRowDef="let row; columns: izinColumns;"></mat-row>
+                </mat-table>
+              </mat-card-content>
+            </mat-card>
+          </div>
+        </mat-tab>
+
+        <!-- Vardiya Yönetimi -->
+        <mat-tab label="Vardiya Yönetimi" matBadge="{{vardiyaPlanlari.length}}">
+          <div class="tab-content">
+            <!-- Yeni Vardiya Planı -->
+            <mat-card class="add-card">
+              <mat-card-header>
+                <mat-card-title>
+                  <mat-icon>schedule</mat-icon>
+                  Yeni Vardiya Planı
+                </mat-card-title>
+              </mat-card-header>
+              <mat-card-content>
+                <form [formGroup]="vardiyaForm" class="vardiya-form">
+                  <div class="form-row">
+                    <mat-form-field>
+                      <mat-label>Personel</mat-label>
+                      <mat-select formControlName="personelId">
+                        <mat-option *ngFor="let personel of personeller" [value]="personel.id">
+                          {{personel.ad}} {{personel.soyad}} - {{personel.pozisyon}}
+                        </mat-option>
+                      </mat-select>
+                    </mat-form-field>
+
+                    <mat-form-field>
+                      <mat-label>Tarih</mat-label>
+                      <input matInput [matDatepicker]="vardiyaTarihPicker" formControlName="tarih">
+                      <mat-datepicker-toggle matSuffix [for]="vardiyaTarihPicker"></mat-datepicker-toggle>
+                      <mat-datepicker #vardiyaTarihPicker></mat-datepicker>
+                    </mat-form-field>
+
+                    <mat-form-field>
+                      <mat-label>Vardiya Tipi</mat-label>
+                      <mat-select formControlName="vardiya">
+                        <mat-option *ngFor="let tip of vardiyaTipleri" [value]="tip">
+                          {{tip}}
+                        </mat-option>
+                      </mat-select>
+                    </mat-form-field>
+                  </div>
+
+                  <div class="form-row">
+                    <mat-form-field>
+                      <mat-label>Başlangıç Saati</mat-label>
+                      <input matInput formControlName="baslangicSaati" placeholder="HH:MM">
+                    </mat-form-field>
+
+                    <mat-form-field>
+                      <mat-label>Bitiş Saati</mat-label>
+                      <input matInput formControlName="bitisSaati" placeholder="HH:MM">
+                    </mat-form-field>
+                  </div>
+
+                  <div class="form-actions">
+                    <button mat-raised-button color="primary" (click)="vardiyaEkle()" [disabled]="vardiyaForm.invalid">
+                      <mat-icon>add</mat-icon>
+                      Vardiya Ekle
+                    </button>
+                  </div>
+                </form>
+              </mat-card-content>
+            </mat-card>
+
+            <!-- Vardiya Planları Listesi -->
+            <mat-card class="table-card">
+              <mat-card-header>
+                <mat-card-title>Vardiya Planları</mat-card-title>
+              </mat-card-header>
+              <mat-card-content>
+                <mat-table [dataSource]="vardiyaPlanlari" class="vardiya-table">
+                  <!-- Personel Adı Kolonu -->
+                  <ng-container matColumnDef="personelAdi">
+                    <mat-header-cell *matHeaderCellDef>Personel</mat-header-cell>
+                    <mat-cell *matCellDef="let vardiya">{{vardiya.personelAdi}}</mat-cell>
+                  </ng-container>
+
+                  <!-- Tarih Kolonu -->
+                  <ng-container matColumnDef="tarih">
+                    <mat-header-cell *matHeaderCellDef>Tarih</mat-header-cell>
+                    <mat-cell *matCellDef="let vardiya">{{vardiya.tarih | date:'dd/MM/yyyy, EEEE':'tr'}}</mat-cell>
+                  </ng-container>
+
+                  <!-- Vardiya Kolonu -->
+                  <ng-container matColumnDef="vardiya">
+                    <mat-header-cell *matHeaderCellDef>Vardiya</mat-header-cell>
+                    <mat-cell *matCellDef="let vardiya">
+                      <mat-chip [ngClass]="vardiya.vardiya === 'Gündüz' ? 'gunduz-chip' : vardiya.vardiya === 'Gece' ? 'gece-chip' : 'nobet-chip'">
+                        {{vardiya.vardiya}}
+                      </mat-chip>
+                    </mat-cell>
+                  </ng-container>
+
+                  <!-- Saat Aralığı Kolonu -->
+                  <ng-container matColumnDef="saatAraligi">
+                    <mat-header-cell *matHeaderCellDef>Saat Aralığı</mat-header-cell>
+                    <mat-cell *matCellDef="let vardiya">{{vardiya.baslangicSaati}} - {{vardiya.bitisSaati}}</mat-cell>
+                  </ng-container>
+
+                  <!-- İşlemler Kolonu -->
+                  <ng-container matColumnDef="islemler">
+                    <mat-header-cell *matHeaderCellDef>İşlemler</mat-header-cell>
+                    <mat-cell *matCellDef="let vardiya">
+                      <button mat-icon-button color="warn" (click)="vardiyaSil(vardiya.id)">
+                        <mat-icon>delete</mat-icon>
+                      </button>
+                    </mat-cell>
+                  </ng-container>
+
+                  <mat-header-row *matHeaderRowDef="vardiyaColumns"></mat-header-row>
+                  <mat-row *matRowDef="let row; columns: vardiyaColumns;"></mat-row>
+                </mat-table>
+              </mat-card-content>
+            </mat-card>
+          </div>
+        </mat-tab>
+      </mat-tab-group>
+    </mat-card-content>
+  </mat-card>
+</div>

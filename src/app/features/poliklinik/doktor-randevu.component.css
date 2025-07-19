@@ -1,0 +1,323 @@
+.doktor-randevu-container {
+  padding: 20px;
+  max-width: 1400px;
+  margin: 0 auto;
+}
+
+.tab-content {
+  padding: 20px 0;
+}
+
+/* Arama Formu */
+.search-card {
+  margin-bottom: 20px;
+}
+
+.search-form {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.search-row {
+  display: grid;
+  grid-template-columns: 2fr 1fr 1fr;
+  gap: 16px;
+  align-items: center;
+}
+
+.search-actions {
+  display: flex;
+  gap: 12px;
+  justify-content: flex-end;
+}
+
+/* Sonuçlar */
+.results-card {
+  min-height: 400px;
+}
+
+.loading {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 40px;
+  gap: 16px;
+}
+
+.no-results {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 40px;
+  gap: 16px;
+  color: #666;
+}
+
+.no-results mat-icon {
+  font-size: 48px;
+  width: 48px;
+  height: 48px;
+}
+
+/* Doktor Grid */
+.doktor-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(400px, 1fr));
+  gap: 20px;
+  margin-top: 20px;
+}
+
+.doktor-card {
+  border: 1px solid #e0e0e0;
+  border-radius: 8px;
+  transition: all 0.3s ease;
+}
+
+.doktor-card:hover {
+  box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+  transform: translateY(-2px);
+}
+
+.doktor-avatar {
+  background-color: #1976d2;
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.doktor-info {
+  margin: 16px 0;
+}
+
+.info-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 8px;
+  font-size: 14px;
+}
+
+.info-item mat-icon {
+  font-size: 18px;
+  width: 18px;
+  height: 18px;
+  color: #666;
+}
+
+/* Çalışma Saatleri */
+.work-hours {
+  margin-top: 16px;
+}
+
+.work-hours .mat-expansion-panel-header {
+  padding: 8px 16px;
+}
+
+.schedule-list {
+  padding: 8px 0;
+}
+
+.schedule-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 4px 0;
+  border-bottom: 1px solid #f0f0f0;
+}
+
+.schedule-item:last-child {
+  border-bottom: none;
+}
+
+.day {
+  font-weight: 500;
+  min-width: 80px;
+}
+
+.time {
+  color: #1976d2;
+  font-weight: 500;
+}
+
+.time.inactive {
+  color: #999;
+  font-style: italic;
+}
+
+/* Randevu Formu */
+.randevu-form-container {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.selected-doctor-card {
+  background-color: #f8f9fa;
+  border-left: 4px solid #1976d2;
+}
+
+.appointment-form-card {
+  margin-bottom: 20px;
+}
+
+.appointment-form {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.form-row {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 16px;
+  align-items: start;
+}
+
+.full-width {
+  grid-column: 1 / -1;
+}
+
+/* Saat Slotları */
+.time-slots-card {
+  margin-bottom: 20px;
+}
+
+.no-slots {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 40px;
+  gap: 16px;
+  color: #666;
+}
+
+.no-slots mat-icon {
+  font-size: 48px;
+  width: 48px;
+  height: 48px;
+}
+
+.time-slots {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+  gap: 12px;
+  margin-top: 16px;
+}
+
+.time-slot {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 12px;
+  border: 2px solid #e0e0e0;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  background-color: white;
+}
+
+.time-slot:hover:not(.unavailable) {
+  border-color: #1976d2;
+  background-color: #f3f7ff;
+}
+
+.time-slot.selected {
+  border-color: #1976d2;
+  background-color: #1976d2;
+  color: white;
+}
+
+.time-slot.unavailable {
+  background-color: #f5f5f5;
+  color: #999;
+  cursor: not-allowed;
+  border-color: #ddd;
+}
+
+.time-slot mat-icon {
+  font-size: 18px;
+  width: 18px;
+  height: 18px;
+}
+
+/* Randevu Aksiyon Butonları */
+.appointment-actions {
+  display: flex;
+  gap: 16px;
+  justify-content: flex-end;
+  padding: 20px 0;
+}
+
+/* Info Mesajları */
+.info-card {
+  margin-bottom: 20px;
+}
+
+.info-message {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 40px;
+  gap: 16px;
+  text-align: center;
+}
+
+.info-message mat-icon {
+  font-size: 48px;
+  width: 48px;
+  height: 48px;
+  color: #1976d2;
+}
+
+/* Responsive Tasarım */
+@media (max-width: 768px) {
+  .doktor-randevu-container {
+    padding: 10px;
+  }
+  
+  .search-row {
+    grid-template-columns: 1fr;
+  }
+  
+  .doktor-grid {
+    grid-template-columns: 1fr;
+  }
+  
+  .form-row {
+    grid-template-columns: 1fr;
+  }
+  
+  .time-slots {
+    grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+  }
+  
+  .appointment-actions {
+    flex-direction: column;
+  }
+}
+
+/* Mat-chip styling */
+mat-chip-set {
+  margin-left: 10px;
+}
+
+/* Expansion panel styling */
+.mat-expansion-panel {
+  box-shadow: none;
+  border: 1px solid #e0e0e0;
+}
+
+/* Card actions */
+mat-card-actions {
+  padding: 16px;
+  display: flex;
+  justify-content: flex-end;
+}
+
+/* Loading spinner */
+mat-spinner {
+  margin: 0 auto;
+}
